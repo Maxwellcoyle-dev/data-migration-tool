@@ -5,6 +5,14 @@ import Authentication from "./pages/Authentication";
 import Callback from "./components/Callback";
 import NavBar from "./components/NavBar";
 
+import { Authenticator } from "@aws-amplify/ui-react";
+import { Amplify } from "aws-amplify";
+
+import awsExports from "./aws-exports";
+import "@aws-amplify/ui-react/styles.css";
+
+Amplify.configure(awsExports);
+
 const App = () => {
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("docebo_access_token")
@@ -56,39 +64,42 @@ const App = () => {
   }, [currentPlatformInfo, platformAuth]);
 
   return (
-    // Add the nav bar at the top of the page
-    <div>
-      <NavBar
-        domain={currentPlatformInfo.domain}
-        authenticated={platformAuth.authenticated}
-      />
-      <Routes>
-        <Route
-          index
-          path="/"
-          element={
-            <Home
-              accessToken={accessToken}
-              setAccessToken={setAccessToken}
-              domain={currentPlatformInfo.domain}
+    <Authenticator>
+      {({ signOut, user }) => (
+        <div>
+          <NavBar
+            domain={currentPlatformInfo.domain}
+            authenticated={platformAuth.authenticated}
+          />
+          <Routes>
+            <Route
+              index
+              path="/"
+              element={
+                <Home
+                  accessToken={accessToken}
+                  setAccessToken={setAccessToken}
+                  domain={currentPlatformInfo.domain}
+                />
+              }
             />
-          }
-        />
-        <Route
-          path="/authentication"
-          element={
-            <Authentication
-              platformAuth={platformAuth}
-              setCurrentPlatformInfo={setCurrentPlatformInfo}
+            <Route
+              path="/authentication"
+              element={
+                <Authentication
+                  platformAuth={platformAuth}
+                  setCurrentPlatformInfo={setCurrentPlatformInfo}
+                />
+              }
             />
-          }
-        />
-        <Route
-          path="/callback"
-          element={<Callback setAccessToken={setAccessToken} />}
-        />
-      </Routes>
-    </div>
+            <Route
+              path="/callback"
+              element={<Callback setAccessToken={setAccessToken} />}
+            />
+          </Routes>
+        </div>
+      )}
+    </Authenticator>
   );
 };
 
