@@ -2,7 +2,7 @@ import { processMultipartForm, csvToJson } from "./utils/multipartUtils.mjs";
 import { transformData } from "./utils/transformData.mjs";
 
 export const handler = async (event) => {
-  console.log("Received event:", JSON.stringify(event));
+  console.log("Received event, yo:", JSON.stringify(event));
 
   try {
     const { fileData, optionsData, importType } = await processMultipartForm(
