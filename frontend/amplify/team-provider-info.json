@@ -1,0 +1,26 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-datamigrationtool-dev-8ef02-authRole",
+      "UnauthRoleArn": "arn:aws:iam::950809776337:role/amplify-datamigrationtool-dev-8ef02-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::950809776337:role/amplify-datamigrationtool-dev-8ef02-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-datamigrationtool-dev-8ef02-deployment",
+      "UnauthRoleName": "amplify-datamigrationtool-dev-8ef02-unauthRole",
+      "StackName": "amplify-datamigrationtool-dev-8ef02",
+      "StackId": "arn:aws:cloudformation:us-east-2:950809776337:stack/amplify-datamigrationtool-dev-8ef02/78e36ba0-2d92-11ef-9c4a-0a0523b47d25",
+      "AmplifyAppId": "d2ffs3a7g3lby9"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d2ffs3a7g3lby9",
+          "type": "cicd"
+        }
+      },
+      "auth": {
+        "datamigrationtool4be281a8": {}
+      }
+    }
+  }
+}
