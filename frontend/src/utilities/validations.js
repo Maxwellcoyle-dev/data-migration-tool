@@ -1,4 +1,7 @@
-export const validateBranchData = (data, requiredFields) => {
+import { typeFields } from "./typeFields";
+
+export const validateBranchData = (data, importType) => {
+  const requiredFields = typeFields[importType].requiredFields;
   console.log("Data:", data);
   console.log("Required Fields:", requiredFields);
 
@@ -49,10 +52,10 @@ export const validateUserData = (data) => {
   return errors;
 };
 
-export const validateData = (data, importType, requiredFields) => {
+export const validateData = (data, importType) => {
   switch (importType) {
     case "branches":
-      return validateBranchData(data, requiredFields);
+      return validateBranchData(data, importType);
     case "users":
       return validateUserData(data);
     default:

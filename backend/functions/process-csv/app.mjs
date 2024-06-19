@@ -8,6 +8,7 @@ import { getAccessToken } from "./utils/getAccessToken.mjs";
 const postToDocebo = async (url, headers, data) => {
   try {
     const response = await axios.post(url, data, { headers });
+    console.log("Docebo API response:", response.data);
     return response.data;
   } catch (error) {
     if (error.response) {

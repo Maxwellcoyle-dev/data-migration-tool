@@ -6,9 +6,9 @@ import { transformData } from "../utilities/tranformations";
 
 const CSVUploader = ({
   onUpload,
-  setUploadError,
+  setCsvValidationError,
+  setCsvTransformError,
   importType,
-  requiredFields,
 }) => {
   const onDrop = useCallback(
     (acceptedFiles) => {
@@ -33,13 +33,9 @@ const CSVUploader = ({
         },
         complete: () => {
           // Validate the data using headers only
-          const validationErrors = validateData(
-            [allHeaders],
-            importType,
-            requiredFields
-          );
+          const validationErrors = validateData([allHeaders], importType);
           if (validationErrors.length > 0) {
-            setUploadError(validationErrors.join("; "));
+            setCsvValidationError(validationErrors.join("; "));
           } else {
             try {
               // Transform only the first 3 rows for preview
@@ -49,16 +45,15 @@ const CSVUploader = ({
               );
               // Set the preview data and pass the file for later use
               onUpload(transformedPreviewData, file);
-              setUploadError("");
             } catch (error) {
-              setUploadError(error.message);
+              setCsvTransformError("Error transforming CSV data");
             }
           }
         },
         header: true,
       });
     },
-    [onUpload, importType, requiredFields, setUploadError]
+    [onUpload, importType, setCsvValidationError, setCsvTransformError]
   );
 
   const { getRootProps, getInputProps, open } = useDropzone({
