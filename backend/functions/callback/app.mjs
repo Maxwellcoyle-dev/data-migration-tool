@@ -3,8 +3,14 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
 const client = new DynamoDBClient({ region: "us-east-2" });
 
+const REDIRECT_URI = process.env.CALLBACK_URI;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const TABLE_NAME = process.env.ACCESS_TOKEN_TABLE_NAME;
+
 export const handler = async (event) => {
   console.log("Function Initiated --- EVENT: ", event);
+
+  console.log("env variables -- ", { REDIRECT_URI, FRONTEND_URL, TABLE_NAME });
 
   const params = event.queryStringParameters;
   console.log("GET - params", params);
@@ -18,7 +24,7 @@ export const handler = async (event) => {
 
   console.log("GET - code", code);
 
-  const redirectUri = `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback`;
+  console.log("redirect URI", REDIRECT_URI);
 
   try {
     const response = await axios.post(
@@ -26,7 +32,7 @@ export const handler = async (event) => {
       new URLSearchParams({
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: redirectUri,
+        redirect_uri: REDIRECT_URI,
         client_id: clientId,
         client_secret: clientSecret,
       }),
@@ -46,7 +52,7 @@ export const handler = async (event) => {
     // Save the access_token to DynamoDB - partition key is userId and sort key is platformUrl
     // send additional params - refreshToken, timeStamp, accessToken
     const params = {
-      TableName: "AccessTokens",
+      TableName: TABLE_NAME,
       Item: {
         userId: { S: userId },
         platformUrl: { S: domain },
@@ -65,7 +71,8 @@ export const handler = async (event) => {
       console.error("Error", error);
     }
 
-    const frontEndUrl = `http://localhost:3000/callback?access_token=${access_token}`;
+    const frontEndUrl = `${FRONTEND_URL}${access_token}`;
+
     console.log("frontEndUrl", frontEndUrl);
     return {
       statusCode: 302,

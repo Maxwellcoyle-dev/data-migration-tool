@@ -54,6 +54,11 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+          CALLBACK_URI: https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback
+          FRONTEND_URL: http://localhost:3000/callback?access_token=
 
   ProcessCSVFunction:
     Type: AWS::Serverless::Function
@@ -72,6 +77,9 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
 
   ScanAccessTokenTableFunction:
     Type: AWS::Serverless::Function

@@ -1,77 +1,84 @@
 export const transformBranchData = (data) => {
-  console.log("data", data);
-  const branchData = data.map((row) => {
-    const translations = {};
-    // Loop over each property in the row
-    for (const key in row) {
-      // Check if the key starts with 'name_' which indicates a translation
-      if (key.startsWith("name_")) {
-        // Extract the language code after 'name_'
-        const languageCode = key.split("_")[1];
-        // Map the translation using the language code as the key
-        translations[languageCode] = row[key];
+  try {
+    console.log("Transforming branch data:", data);
+    const branchData = data.map((row) => {
+      const translations = {};
+      for (const key in row) {
+        if (key.startsWith("name_")) {
+          const languageCode = key.split("_")[1];
+          translations[languageCode] = row[key];
+        }
       }
-    }
-    // Return the transformed object for each row
-    return {
-      code: row.code,
-      translations: translations,
-      sibling: row.sibling || null, // Use null if sibling is undefined
-      parent_code: row.parent_code || null, // Use null if parent_code is undefined
-    };
-  });
-
-  console.log("branchData", branchData);
-  return branchData;
+      return {
+        code: row.code,
+        translations: translations,
+        ...(row.sibling && { sibling: row.sibling }),
+        ...(row.parent_code && { parent_code: row.parent_code }),
+      };
+    });
+    console.log("Transformed branch data:", branchData);
+    return branchData;
+  } catch (error) {
+    console.error("Error transforming branch data:", error);
+    throw error;
+  }
 };
 
 export const transformUserData = (data) => {
-  return data.map((row) => {
-    const transformedRow = {};
-
-    // List of all possible fields
-    const fields = [
-      "user_id",
-      "username",
-      "first_name",
-      "last_name",
-      "new_username",
-      "password",
-      "timezone",
-      "date_format",
-      "active",
-      "expiration_date",
-      "level",
-      "profile",
-      "manager_xxx",
-      "is_manager",
-      "language",
-      "branch_name_path",
-      "branch_code_path",
-      "branch_name",
-      "branch_code",
-      "field_xxx",
-    ];
-
-    // Iterate over the possible fields and add them to transformedRow if they exist in the row
-    fields.forEach((field) => {
-      if (row[field] !== undefined && row[field] !== null) {
-        transformedRow[field] = row[field];
-      }
+  try {
+    console.log("Transforming user data:", data);
+    const transformedData = data.map((row) => {
+      const transformedRow = {};
+      const fields = [
+        "user_id",
+        "username",
+        "first_name",
+        "last_name",
+        "new_username",
+        "password",
+        "timezone",
+        "date_format",
+        "active",
+        "expiration_date",
+        "level",
+        "profile",
+        "manager_xxx",
+        "is_manager",
+        "language",
+        "branch_name_path",
+        "branch_code_path",
+        "branch_name",
+        "branch_code",
+        "field_xxx",
+      ];
+      fields.forEach((field) => {
+        if (row[field] !== undefined && row[field] !== null) {
+          transformedRow[field] = row[field];
+        }
+      });
+      return transformedRow;
     });
-
-    return transformedRow;
-  });
+    console.log("Transformed user data:", transformedData);
+    return transformedData;
+  } catch (error) {
+    console.error("Error transforming user data:", error);
+    throw error;
+  }
 };
 
 export const transformData = (data, importType) => {
-  switch (importType) {
-    case "branches":
-      return transformBranchData(data);
-    case "users":
-      return transformUserData(data);
-    // Add more cases for different import types
-    default:
-      throw new Error(`Unknown import type: ${importType}`);
+  try {
+    console.log(`Transforming data for import type: ${importType}`);
+    switch (importType) {
+      case "branches":
+        return transformBranchData(data);
+      case "users":
+        return transformUserData(data);
+      default:
+        throw new Error(`Unknown import type: ${importType}`);
+    }
+  } catch (error) {
+    console.error("Error in transformData function:", error);
+    throw error;
   }
 };

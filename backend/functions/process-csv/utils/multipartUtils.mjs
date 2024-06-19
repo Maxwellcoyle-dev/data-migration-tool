@@ -43,6 +43,7 @@ export const processMultipartForm = (event) => {
           domain,
         });
       } catch (error) {
+        onsole.error("Error during form finish:", error);
         reject(error);
       }
     });

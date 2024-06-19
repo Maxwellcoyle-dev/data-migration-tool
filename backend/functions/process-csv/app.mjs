@@ -1,39 +1,50 @@
-import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 import axios from "axios";
 
 import { processMultipartForm, csvToJson } from "./utils/multipartUtils.mjs";
 import { transformData } from "./utils/transformData.mjs";
+import { typeFields } from "./utils/typeFields.mjs";
+import { getAccessToken } from "./utils/getAccessToken.mjs";
 
-const client = new DynamoDBClient({ region: "us-east-2" });
+const postToDocebo = async (url, headers, data) => {
+  try {
+    const response = await axios.post(url, data, { headers });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(
+        `Docebo API error: ${error.response.status} ${error.response.data}`
+      );
+    } else {
+      throw new Error(`Docebo API request error: ${error.message}`);
+    }
+  }
+};
 
 export const handler = async (event) => {
-  console.log("Received event, yo:", JSON.stringify(event));
+  console.log("Received event:", JSON.stringify(event));
 
   try {
     const { fileData, optionsData, importType, userId, domain } =
       await processMultipartForm(event);
 
     // Process the CSV data
+    const jsonData = await csvToJson(fileData);
+    const transformedData = transformData(jsonData, importType);
 
-    const jsonData = await csvToJson(fileData); // Parse CSV to JSON
-    console.log(
-      "CSV to JSON conversion successful:",
-      JSON.stringify(jsonData, null, 2)
-    ); // Ensure JSON format
-    const transformedData = transformData(jsonData, importType); // Transform JSON data based on importType
-    console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
+    // Get access token
+    const accessToken = await getAccessToken(userId, domain);
 
-    // get the platform item from dynamodb table using partition key hash - userId + sort key platformUrl
-    const params = {
-      TableName: "AccessTokens",
-      Key: {
-        userId: { S: userId },
-        platformUrl: { S: domain },
-      },
+    // Prepare API request
+    const endpoint = typeFields[importType].endpoint;
+    const url = `https://${domain}${endpoint}`;
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     };
+    const body = { items: transformedData, options: optionsData };
 
-    const { Item } = await client.send(new GetItemCommand(params));
-    console.log("Item:", Item);
+    // Send data to Docebo API
+    const response = await postToDocebo(url, headers, body);
 
     return {
       statusCode: 200,
@@ -42,13 +53,13 @@ export const handler = async (event) => {
       },
       body: JSON.stringify({
         message: "File processed successfully",
-        data: transformedData,
-        options: optionsData,
-        importType: importType,
+        data: response.data,
+        version: response.version,
+        _links: response._links,
       }),
     };
   } catch (error) {
-    console.error("Handler error:", error);
+    console.error("Handler error:", error.message);
 
     // Error response
     return {
