@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
-import { validateData } from "../validations";
-import { transformData } from "../tranformations";
+import { validateData } from "../utilities/validations";
+import { transformData } from "../utilities/tranformations";
 
 const CSVUploader = ({
   onUpload,
@@ -28,7 +28,7 @@ const CSVUploader = ({
           }
           rowCount++;
           if (rowCount === 3) {
-            parser.abort(); // Correct way to abort parsing after the first 3 rows
+            parser.abort(); // abort parsing after the first 3 rows
           }
         },
         complete: () => {

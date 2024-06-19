@@ -1,5 +1,5 @@
 {
-  "name": "process-csv",
+  "name": "scan-access-token-table",
   "version": "1.0.0",
   "description": "",
   "main": "app.mjs",
@@ -10,10 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.600.0",
-    "axios": "^1.7.2",
-    "busboy": "^1.6.0",
-    "csv-parser": "^3.0.0",
-    "stream": "^0.0.2"
+    "@aws-sdk/client-dynamodb": "^3.600.0"
   }
 }

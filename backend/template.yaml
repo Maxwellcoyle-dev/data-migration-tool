@@ -5,17 +5,33 @@ Description: >
 
   Sample SAM Template for data-migration-tool-backend
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 30
-    LoggingConfig:
-      LogFormat: JSON
   Api:
     BinaryMediaTypes:
       - "multipart/form-data"
       - "application/json"
+
 Resources:
+  AccessTokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AccessTokens
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: platformUrl
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: platformUrl
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
   AuthCallbackFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -35,6 +51,15 @@ Resources:
           Properties:
             Path: /callback
             Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+          CALLBACK_URI: https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback
+          FRONTEND_URL: http://localhost:3000/callback?access_token=
+
   ProcessCSVFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -49,3 +74,44 @@ Resources:
           Properties:
             Path: /process-csv
             Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+
+  ScanAccessTokenTableFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/scan-access-token-table/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        ScanTable:
+          Type: Api
+          Properties:
+            Path: /scan-table
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AccessTokensTable
+
+Outputs:
+  AuthCallbackFunction:
+    Description: "Auth Callback Function ARN"
+    Value: !GetAtt AuthCallbackFunction.Arn
+
+  ProcessCSVFunction:
+    Description: "Process CSV Function ARN"
+    Value: !GetAtt ProcessCSVFunction.Arn
+
+  ScanAccessTokenTableFunction:
+    Description: "Scan Access Token Table Function ARN"
+    Value: !GetAtt ScanAccessTokenTableFunction.Arn
+
+  AccessTokensTable:
+    Description: "DynamoDB Table for Access Tokens"
+    Value: !Ref AccessTokensTable

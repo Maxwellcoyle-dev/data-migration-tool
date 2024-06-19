@@ -1,105 +1,77 @@
 import React, { useState, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
+
+// Pages
 import Home from "./pages/Home";
 import Authentication from "./pages/Authentication";
+
+// Components
 import Callback from "./components/Callback";
 import NavBar from "./components/NavBar";
 
-import { Authenticator } from "@aws-amplify/ui-react";
-import { Amplify } from "aws-amplify";
+// Hooks
+import useGetPlatforms from "./hooks/useGetPlatforms";
 
-import awsExports from "./aws-exports";
-import "@aws-amplify/ui-react/styles.css";
-
-Amplify.configure(awsExports);
-
-const App = () => {
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("docebo_access_token")
-  );
-  const [platformAuth, setPlatformAuth] = useState({
-    accessToken: "",
-    lastUpdated: "",
-    // check if lastUpdated is less then 3600 seconds ago (1 hour) if so, then the token is still valid
-    authenticated: false,
-  });
+const App = ({ user }) => {
   const [currentPlatformInfo, setCurrentPlatformInfo] = useState({
     domain: "",
     clientId: "",
     clientSecret: "",
   });
 
-  useEffect(() => {
-    const platformDetails = JSON.parse(
-      localStorage.getItem("platform_details")
-    );
+  const [authenticated, setAuthenticated] = useState(false);
 
-    if (platformDetails) {
-      const { domain, clientId, clientSecret } = platformDetails;
-      if (domain && clientId && clientSecret) {
-        setCurrentPlatformInfo({ domain, clientId, clientSecret });
-      }
-    }
-
-    const platformAuth = JSON.parse(
-      localStorage.getItem("docebo_platform_auth")
-    );
-
-    if (platformAuth) {
-      const { accessToken, lastUpdated } = platformAuth;
-      if (accessToken && lastUpdated) {
-        setPlatformAuth({
-          accessToken,
-          lastUpdated,
-          authenticated:
-            accessToken && Date.now() - platformAuth.lastUpdated < 3600000,
-        });
-      }
-    }
-  }, []);
+  const { platforms } = useGetPlatforms({ userId: user.userId });
 
   useEffect(() => {
-    console.log("App.js: currentPlatformInfo", currentPlatformInfo);
-    console.log("App.js: platformAuth", platformAuth);
-  }, [currentPlatformInfo, platformAuth]);
+    if (platforms?.length) {
+      const platform = platforms[0];
+      setCurrentPlatformInfo({
+        domain: platform.platformUrl,
+        clientId: platform.clientId,
+        clientSecret: platform.clientSecret,
+      });
+
+      // if the platform.timeStamp is less than 60 minutes old, set authenticated to true
+      const timeStamp = new Date(platform.timeStamp).getTime();
+      const currentTime = new Date().getTime();
+      const difference = currentTime - timeStamp;
+      const minutes = difference / 1000 / 60;
+      if (minutes < 60) {
+        setAuthenticated(true);
+      } else {
+        setAuthenticated(false);
+      }
+    }
+  }, [platforms]);
 
   return (
-    <Authenticator>
-      {({ signOut, user }) => (
-        <div>
-          <NavBar
-            domain={currentPlatformInfo.domain}
-            authenticated={platformAuth.authenticated}
-          />
-          <Routes>
-            <Route
-              index
-              path="/"
-              element={
-                <Home
-                  accessToken={accessToken}
-                  setAccessToken={setAccessToken}
-                  domain={currentPlatformInfo.domain}
-                />
-              }
+    <div>
+      <NavBar
+        domain={currentPlatformInfo.domain}
+        authenticated={authenticated}
+      />
+      <Routes>
+        <Route
+          index
+          path="/"
+          element={
+            <Home currentPlatformInfo={currentPlatformInfo} user={user} />
+          }
+        />
+        <Route
+          path="/authentication"
+          element={
+            <Authentication
+              user={user}
+              setCurrentPlatformInfo={setCurrentPlatformInfo}
+              authenticated={authenticated}
             />
-            <Route
-              path="/authentication"
-              element={
-                <Authentication
-                  platformAuth={platformAuth}
-                  setCurrentPlatformInfo={setCurrentPlatformInfo}
-                />
-              }
-            />
-            <Route
-              path="/callback"
-              element={<Callback setAccessToken={setAccessToken} />}
-            />
-          </Routes>
-        </div>
-      )}
-    </Authenticator>
+          }
+        />
+        <Route path="/callback" element={<Callback />} />
+      </Routes>
+    </div>
   );
 };
 

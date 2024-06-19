@@ -1,46 +1,39 @@
 import React, { useEffect, useState } from "react";
 
-const Authentication = ({ platformAuth, setCurrentPlatformInfo }) => {
+import useGetPlatforms from "../hooks/useGetPlatforms";
+
+const Authentication = ({ user, setCurrentPlatformInfo }) => {
   const [editPlatformDetails, setEditPlatformDetails] = useState(false);
   const [domain, setDomain] = useState("");
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
 
-  useEffect(() => {
-    const platformDetails = JSON.parse(
-      localStorage.getItem("platform_details")
-    );
-
-    if (platformDetails) {
-      const { domain, clientId, clientSecret } = platformDetails;
-      if (domain && clientId && clientSecret) {
-        setDomain(domain);
-        setClientId(clientId);
-        setClientSecret(clientSecret);
-      } else {
-        setEditPlatformDetails(true);
-      }
-    }
-  }, []);
+  const { platforms } = useGetPlatforms({ userId: user.userId });
 
   const handleSaveCredntials = () => {
     console.log("Save", domain, clientId, clientSecret);
 
-    localStorage.setItem(
-      "platform_details",
-      JSON.stringify({ domain, clientId, clientSecret })
-    );
     setEditPlatformDetails(!editPlatformDetails);
     setCurrentPlatformInfo({ domain, clientId, clientSecret });
   };
 
+  // set the domain, clientId, and clientSecret to the first item in the platforms array
+  useEffect(() => {
+    if (platforms.length) {
+      const platform = platforms[0];
+      setDomain(platform.platformUrl);
+      setClientId(platform.clientId);
+      setClientSecret(platform.clientSecret);
+    }
+  }, [platforms]);
+
   const authenticate = () => {
     console.log("Authenticate", clientId, domain, clientSecret);
-    const redirectUri = `https://ug6n0hw9wg.execute-api.us-east-2.amazonaws.com/Stage/callback`;
+    const redirectUri = `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback`;
 
     // Add clientId, domain, and clientSecret to the state parameter
     const state = encodeURIComponent(
-      JSON.stringify({ clientId, domain, clientSecret })
+      JSON.stringify({ clientId, domain, clientSecret, userId: user.userId })
     );
 
     const authorizeUrl = `https://${domain}/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
@@ -50,14 +43,23 @@ const Authentication = ({ platformAuth, setCurrentPlatformInfo }) => {
     window.location.href = authorizeUrl;
   };
 
+  const handleSelectPlatform = (index) => {
+    console.log("Selected Index", index);
+    const platform = platforms[index];
+    console.log("Selected Platform", platform);
+    setDomain(platform?.platformUrl);
+    setClientId(platform?.clientId);
+    setClientSecret(platform?.clientSecret);
+    setCurrentPlatformInfo({
+      domain: platform?.platformUrl,
+      clientId: platform?.clientId,
+      clientSecret: platform.clientSecret,
+    });
+  };
+
   return (
     <div style={{ padding: "0 3rem" }}>
-      <div style={{ paddingTop: 40, paddingBottom: 40 }}>
-        <h2>
-          {platformAuth.authenticated ? "Authenticated" : "Please Authenticate"}
-        </h2>
-      </div>
-      <div style={{ paddingTop: 40, paddingBottom: 40 }}>
+      <div style={{ paddingTop: 20, paddingBottom: 20 }}>
         <h3>Authenticate with Docebo</h3>
         <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
@@ -111,13 +113,32 @@ const Authentication = ({ platformAuth, setCurrentPlatformInfo }) => {
               )}
             </label>
           </div>
-          <button type="button" onClick={handleSaveCredntials}>
+          <button
+            type="button"
+            onClick={handleSaveCredntials}
+            style={{ width: "10rem" }}
+          >
             {editPlatformDetails ? "Save" : "Edit"}
           </button>
-          <button type="button" onClick={authenticate}>
+          <button
+            type="button"
+            onClick={authenticate}
+            style={{ width: "10rem" }}
+          >
             Authenticate
           </button>
         </form>
+      </div>
+
+      <div style={{ paddingTop: 20, paddingBottom: 20, width: "50%" }}>
+        <h3>Platforms</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {platforms.map((platform, index) => (
+            <button key={index} onClick={() => handleSelectPlatform(index)}>
+              {platform.platformUrl}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

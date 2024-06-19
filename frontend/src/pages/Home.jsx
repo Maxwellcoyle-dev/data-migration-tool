@@ -7,10 +7,9 @@ import {
 } from "react-icons/io";
 import CSVUploader from "../components/CSVUploader.jsx";
 import CSVPreview from "../components/CSVPreview.jsx";
-import { typeFields } from "../typeFields.js";
-import useImportData from "../hooks/useImportData.js";
+import { typeFields } from "../utilities/typeFields.js";
 
-const Home = ({ accessToken, domain }) => {
+const Home = ({ currentPlatformInfo, user }) => {
   const [csvData, setCsvData] = useState([]);
   const [csvFile, setCsvFile] = useState(null);
   const [importType, setImportType] = useState("branches");
@@ -18,13 +17,6 @@ const Home = ({ accessToken, domain }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [fieldsVisible, setFieldsVisible] = useState(false);
-
-  const importData = useImportData(
-    accessToken,
-    typeFields[importType].httpMethod,
-    typeFields[importType].endpoint,
-    domain
-  );
 
   useEffect(() => {
     const options = {};
@@ -48,13 +40,16 @@ const Home = ({ accessToken, domain }) => {
     console.log("importOptions:", importOptions);
     console.log("importType:", importType);
     console.log("csvFile:", csvFile);
+
     const formData = new FormData();
     formData.append("file", csvFile); // Append the actual CSV file
     formData.append("options", JSON.stringify(importOptions));
     formData.append("importType", importType);
+    formData.append("userId", user.userId);
+    formData.append("domain", currentPlatformInfo.domain);
 
     fetch(
-      `https://ug6n0hw9wg.execute-api.us-east-2.amazonaws.com/Stage/process-csv`,
+      `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/process-csv`,
       {
         method: "POST",
         body: formData,

@@ -1,58 +1,65 @@
+import axios from "axios";
+
 import { processMultipartForm, csvToJson } from "./utils/multipartUtils.mjs";
 import { transformData } from "./utils/transformData.mjs";
+import { typeFields } from "./utils/typeFields.mjs";
+import { getAccessToken } from "./utils/getAccessToken.mjs";
+
+const postToDocebo = async (url, headers, data) => {
+  try {
+    const response = await axios.post(url, data, { headers });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(
+        `Docebo API error: ${error.response.status} ${error.response.data}`
+      );
+    } else {
+      throw new Error(`Docebo API request error: ${error.message}`);
+    }
+  }
+};
 
 export const handler = async (event) => {
-  console.log("Received event, yo:", JSON.stringify(event));
+  console.log("Received event:", JSON.stringify(event));
 
   try {
-    const { fileData, optionsData, importType } = await processMultipartForm(
-      event
-    );
+    const { fileData, optionsData, importType, userId, domain } =
+      await processMultipartForm(event);
 
     // Process the CSV data
-    try {
-      const jsonData = await csvToJson(fileData); // Parse CSV to JSON
-      console.log(
-        "CSV to JSON conversion successful:",
-        JSON.stringify(jsonData, null, 2)
-      ); // Ensure JSON format
-      const transformedData = transformData(jsonData, importType); // Transform JSON data based on importType
-      console.log(
-        "Transformed data:",
-        JSON.stringify(transformedData, null, 2)
-      ); // Ensure JSON format
+    const jsonData = await csvToJson(fileData);
+    const transformedData = transformData(jsonData, importType);
 
-      // Success response
-      return {
-        statusCode: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({
-          message: "File processed successfully",
-          data: transformedData,
-          options: optionsData,
-          importType: importType,
-        }),
-      };
-    } catch (error) {
-      console.error("CSV to JSON conversion failed:", error);
+    // Get access token
+    const accessToken = await getAccessToken(userId, domain);
 
-      // Error response
-      return {
-        statusCode: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({
-          message: "CSV to JSON conversion failed",
-          error: error.message,
-          importType: importType,
-        }),
-      };
-    }
+    // Prepare API request
+    const endpoint = typeFields[importType].endpoint;
+    const url = `https://${domain}${endpoint}`;
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    };
+    const body = { items: transformedData, options: optionsData };
+
+    // Send data to Docebo API
+    const response = await postToDocebo(url, headers, body);
+
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        message: "File processed successfully",
+        data: response.data,
+        version: response.version,
+        _links: response._links,
+      }),
+    };
   } catch (error) {
-    console.error("Handler error:", error);
+    console.error("Handler error:", error.message);
 
     // Error response
     return {

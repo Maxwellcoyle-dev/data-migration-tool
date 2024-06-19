@@ -48,42 +48,55 @@ const CSVPreview = ({
         }}
       >
         <thead style={{ backgroundColor: "#f2f2f2" }}>
-          {headerGroups.map((headerGroup, index) => (
-            <tr key={index} {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th
-                  key={column.id}
-                  {...column.getHeaderProps()}
-                  style={{
-                    borderBottom: "1px solid #ddd",
-                    padding: "0.5em",
-                    textAlign: "left",
-                  }}
-                >
-                  {column.render("Header")}
-                </th>
-              ))}
-            </tr>
-          ))}
+          {headerGroups.map((headerGroup) => {
+            const { key, ...restHeaderGroupProps } =
+              headerGroup.getHeaderGroupProps();
+            return (
+              <tr key={key} {...restHeaderGroupProps}>
+                {headerGroup.headers.map((column) => {
+                  const { key: columnKey, ...restColumnProps } =
+                    column.getHeaderProps();
+                  return (
+                    <th
+                      key={columnKey}
+                      {...restColumnProps}
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "0.5em",
+                        textAlign: "left",
+                      }}
+                    >
+                      {column.render("Header")}
+                    </th>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </thead>
         <tbody {...getTableBodyProps()}>
           {rows.map((row) => {
             prepareRow(row);
+            const { key, ...restRowProps } = row.getRowProps();
             return (
               <tr
-                key={row.id}
-                {...row.getRowProps()}
+                key={key}
+                {...restRowProps}
                 style={{ borderBottom: "1px solid #ddd" }}
               >
-                {row.cells.map((cell) => (
-                  <td
-                    key={cell.column.id}
-                    {...cell.getCellProps()}
-                    style={{ padding: "0.5em" }}
-                  >
-                    {cell.render("Cell")}
-                  </td>
-                ))}
+                {row.cells.map((cell) => {
+                  const { key: cellKey, ...restCellProps } =
+                    cell.getCellProps();
+                  return (
+                    <td
+                      key={cellKey}
+                      {...restCellProps}
+                      style={{ padding: "0.5em" }}
+                    >
+                      {cell.render("Cell")}
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}
