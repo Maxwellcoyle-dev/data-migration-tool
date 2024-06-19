@@ -55,7 +55,9 @@ const App = ({ user }) => {
         <Route
           index
           path="/"
-          element={<Home domain={currentPlatformInfo.domain} />}
+          element={
+            <Home currentPlatformInfo={currentPlatformInfo} user={user} />
+          }
         />
         <Route
           path="/authentication"
