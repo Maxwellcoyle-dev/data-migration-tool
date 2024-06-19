@@ -7,7 +7,7 @@ import {
 } from "react-icons/io";
 import CSVUploader from "../components/CSVUploader.jsx";
 import CSVPreview from "../components/CSVPreview.jsx";
-import { typeFields } from "../typeFields.js";
+import { typeFields } from "../utilities/typeFields.js";
 import useImportData from "../hooks/useImportData.js";
 
 const Home = ({ accessToken, domain }) => {
@@ -54,7 +54,7 @@ const Home = ({ accessToken, domain }) => {
     formData.append("importType", importType);
 
     fetch(
-      `https://ug6n0hw9wg.execute-api.us-east-2.amazonaws.com/Stage/process-csv`,
+      `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/process-csv`,
       {
         method: "POST",
         body: formData,
