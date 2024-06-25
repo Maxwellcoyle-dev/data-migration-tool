@@ -5,8 +5,11 @@ import {
   IoIosCheckmarkCircle,
   IoMdWarning,
 } from "react-icons/io";
+import { ThreeDots } from "react-loader-spinner";
+
 import CSVUploader from "../components/CSVUploader.jsx";
 import CSVPreview from "../components/CSVPreview.jsx";
+import LogDisplay from "../components/LogDisplay.jsx";
 import { typeFields } from "../utilities/typeFields.js";
 
 import usePostCSV from "../hooks/usePostCSV.js";
@@ -20,6 +23,11 @@ const Home = ({ currentPlatformInfo, user }) => {
   const [csvtransformError, setCsvTransformError] = useState("");
   const [csvReadyForImport, setCsvReadyForImport] = useState(false);
   const [fieldsVisible, setFieldsVisible] = useState(false);
+  const [responseLogs, setResponseLogs] = useState({
+    success: [],
+    errors: [],
+    showLogs: false,
+  });
 
   const {
     mutate,
@@ -57,7 +65,39 @@ const Home = ({ currentPlatformInfo, user }) => {
     setCsvFile(file); // Set the actual file
     setCsvTransformError("");
     setCsvValidationError("");
+    setResponseLogs({
+      success: [],
+      errors: [],
+      showLogs: false,
+    });
+    reset();
   };
+
+  useEffect(() => {
+    if (uploadCSVResponseData?.data) {
+      console.log("uploadCSVResponseData", uploadCSVResponseData);
+      const successLogs = uploadCSVResponseData.data.data.data.filter(
+        (log) => log.success
+      );
+      console.log("successLogs", successLogs);
+      const errorLogs = uploadCSVResponseData.data.data.data.filter(
+        (log) => !log.success
+      );
+      console.log("errorLogs", errorLogs);
+
+      setResponseLogs({
+        success: successLogs,
+        errors: errorLogs,
+        showLogs: true,
+      });
+    }
+  }, [uploadCSVResponseData]);
+
+  useEffect(() => {
+    console.log("uploadCSVResponseData", uploadCSVResponseData);
+    console.log("csvUploadError", csvUploadError);
+    console.log("csvUploadError message", csvUploadError?.message);
+  }, [uploadCSVResponseData, csvUploadError]);
 
   const handleSubmit = () => {
     const formData = new FormData();
@@ -142,8 +182,11 @@ const Home = ({ currentPlatformInfo, user }) => {
             value={importType}
             onChange={(e) => handleImportTypeSelect(e.target.value)}
           >
-            <option value="branches">Branches</option>
-            <option value="users">Users</option>
+            {Object.keys(typeFields).map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -210,24 +253,51 @@ const Home = ({ currentPlatformInfo, user }) => {
           </div>
 
           <div style={{ width: "50%" }}>
-            {csvReadyForImport && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  alignItems: "center",
-                }}
-              >
-                <IoIosCheckmarkCircle
-                  style={{ color: "green", fontSize: 50 }}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                alignItems: "center",
+              }}
+            >
+              {isPending && (
+                <ThreeDots
+                  visible={true}
+                  height="80"
+                  width="80"
+                  color="#4fa94d"
+                  radius="9"
+                  ariaLabel="three-dots-loading"
                 />
-                <h2>CSV ready for import</h2>
-                <button onClick={handleSubmit} style={styles.button}>
-                  Import Data
-                </button>
-              </div>
-            )}
+              )}
+              {isError && (
+                <p style={{ color: "red" }}>{csvUploadError.message}</p>
+              )}
+              {uploadCSVResponseData?.data && (
+                <>
+                  <p>
+                    <strong>Successful Rows: </strong>
+                    {responseLogs.success.length}
+                  </p>
+                  <p>
+                    <strong>Failed Rows: </strong>
+                    {responseLogs.errors.length}
+                  </p>
+                </>
+              )}
+              {csvReadyForImport && (
+                <>
+                  <IoIosCheckmarkCircle
+                    style={{ color: "green", fontSize: 50 }}
+                  />
+                  <h2>CSV ready for import</h2>
+                  <button onClick={handleSubmit} style={styles.button}>
+                    Import Data
+                  </button>
+                </>
+              )}
+            </div>
 
             {(csvValidationError.length > 0 ||
               csvtransformError.length > 0) && (
@@ -263,6 +333,8 @@ const Home = ({ currentPlatformInfo, user }) => {
           />
         )}
       </div>
+
+      {responseLogs.showLogs && <LogDisplay responseLogs={responseLogs} />}
     </div>
   );
 };

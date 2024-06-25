@@ -66,6 +66,7 @@ const App = ({ user }) => {
               user={user}
               setCurrentPlatformInfo={setCurrentPlatformInfo}
               authenticated={authenticated}
+              setAuthenticated={setAuthenticated}
             />
           }
         />

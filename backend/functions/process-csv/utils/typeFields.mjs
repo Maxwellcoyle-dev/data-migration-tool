@@ -33,183 +33,229 @@ export const typeFields = {
       },
     },
   },
-  users: {
-    importType: "users",
-    endpoint: "/manage/v1/user/batch",
+  courses: {
+    importType: "courses",
+    endpoint: "/learn/v1/courses/batch",
     httpMethod: "POST",
     requiredFields: [
       {
-        field: "user_id",
-        type: "integer",
-        description: `The numeric id for a user. Required if no username is specified for the item. Do not fill if the "username" field has been specified.`,
+        field: "course_type",
+        type: "string",
+        description: `The type of the course (elearning, webinar, classroom)`,
       },
       {
-        field: "username",
+        field: "course_name",
         type: "string",
-        description: `The unique username for a user. Required if no user_id is specified for the item. Do not fill if the "user_id" field has been specified. Will be ignored if checked "Use Email as Username" in "Advanced Settings".`,
+        description: `The name of the course`,
+      },
+      {
+        field: "course_description",
+        type: "string",
+        description: `The description of the course`,
       },
     ],
     optionalFields: [
-      { field: "first_name", type: "string", description: `User's first name` },
-      { field: "last_name", type: "string", description: `User's last name` },
       {
-        field: "new_username",
+        field: "course_code",
         type: "string",
-        description: `If specified, updates the current username with this new one. The update_user_info option must be set as true.`,
+        description: `The code of the course`,
       },
       {
-        field: "password",
+        field: "course_provider",
         type: "string",
-        description: `Set a user's password`,
+        description:
+          "The CSP of the course (foreign key - needed only when importing external course from catalogue)",
       },
       {
-        field: "timezone",
+        field: "external_course_id",
         type: "string",
-        description: `Set a user's timezone, eg: Europe/Rome`,
+        description:
+          "If course_provider is provided, this represents the provider internal id. Ignored otherwise.",
       },
       {
-        field: "date_format",
+        field: "course_cover",
         type: "string",
-        description: `Date format (e.g. 'ar', 'ar_dz', 'bg', 'en', 'en-gb', 'en_gb', 'it', 'es', etc)`,
+        description: "Course thumbnail encoded in the base64 format",
       },
       {
-        field: "active",
-        type: "boolean",
-        description: `Is a user active (true) or suspended (false)`,
+        field: "course_cover_id",
+        type: "integer",
+        description:
+          "Course thumbnail id. Mutually exclusive with course_cover",
       },
       {
-        field: "expiration_date",
+        field: "course_cover_name",
         type: "string",
-        description: `End the validity of a user account to a certain date. The value can be empty. If not empty, it must bin YYYY-MM-DD format (Eg: 2018-12-31`,
+        description:
+          "Course thumbnail name. The name of an image in S3 (allowed types: jpg, png, gif)",
       },
       {
-        field: "level",
+        field: "course_language",
         type: "string",
-        description: `The user's permissions. This will be either "user", "poweruser" or "superadmin". If omitted, defaults to "user"`,
+        description: "The language of the course",
       },
       {
-        field: "profile",
+        field: "course_published",
         type: "string",
-        description: `Will be the profile name for the Power User. Will be ignored if the user level is "user". If new power user management is active, more profiles can be passed as array ( ["profile1","profile2"] ) or as string with | delimitator ( "profile1|profile2" )`,
+        description:
+          "Takes one of two values 'published' or 'unpublished'. 'published' is equal to set the course_status param to 2 and 'unpublished' to set it to 0",
       },
       {
-        field: "manager_xxx",
+        field: "course_category_id",
+        type: "integer",
+        description:
+          "The LMS numeric ID of the target category. If provided, will prevail on 'course_category' parameter",
+      },
+      {
+        field: "course_category",
         type: "string",
-        description: `Multiple manager types may be added. Simply replace "xxx" with the right manager type ID. Ex: "manager_1":"username". Use null to remove the manager association`,
+        description: "The code of the category of the course",
       },
       {
-        field: "is_manager",
-        type: "boolean",
-        description: `Flag determining if the user is a manager or not`,
-      },
-      {
-        field: "langauge",
+        field: "course_difficulty",
         type: "string",
-        description: `Set the platform language for the user`,
+        description:
+          "Takes one of the following values 'veryeasy', 'easy', 'medium', 'difficult', 'verydifficult'",
       },
       {
-        field: "branch_name_path",
-        type: "string",
-        description: `Points to a full branch path, separated by slashes. If any part of the branch does not exist yet, it will be automatically created if the "force_create_branches" is TRUE (eg: branch 1/branch 2/branch 3). If no one are found, the "destination_branch" options field will be used as fallback`,
+        field: "user_enroll",
+        type: "number",
+        description:
+          "Either 0 or 1, indicates whether to allow self enrollment of the course",
       },
       {
-        field: "branch_code_path",
+        field: "user_enroll_begin",
         type: "string",
-        description: `Points to the codes of a full branch path, separated by slashes. If a part of the branch does not exist yet, it will be automatically created if the "force_create_branches" is TRUE (eg: b01/b02/b03). In order to create a new branch, both name and code are required. They must be composed of the same structure. If something fails, an error will be shown. If no one are found, the "destination_branch" options field will be used as fallback.`,
+        description:
+          "The start of the date period during which self enrollment is allowed. Format yyyy-mm-dd",
       },
       {
-        field: "branch_name",
+        field: "user_enroll_end",
         type: "string",
-        description: `Identify a branch by name. It is used if "branch_name_path" or "branch_code_path" fields are not provided. If the branch is not found, the "destination_branch" options field will be used as fallback. If multiple branches with the same name are found, an error will be shown.`,
+        description:
+          "The end of the date period during which self enrollment is allowed. Format yyyy-mm-dd",
       },
       {
-        field: "branch_code",
+        field: "course_avg_time",
         type: "string",
-        description: `Identify a branch by its code. It is used if "branch_name" field is not provided. If not found, the "destination_branch" options field will be used as fallback. If multiple branches with the same code are found, an error will be shown.`,
+        description: "The average time of the course. Format HH:MM:SS",
       },
       {
-        field: "field_xxx",
+        field: "course_for_sale",
+        type: "number",
+        description:
+          "Either 0 or 1, indicates whether an elearning course is for sale",
+      },
+      {
+        field: "course_price",
+        type: "number",
+        description:
+          "The price of the course in cents of its currency. eg: 100 means the course costs 1",
+      },
+      {
+        field: "course_status",
+        type: "number",
+        description:
+          "The status of the course. Takes one of the following values 'In preparation', 'Available', 'Effective'",
+      },
+      {
+        field: "course_credits",
+        type: "number",
+        description:
+          "The credits assigned to the course multiplied by 100. eg. 250 indicates 2.5 credits",
+      },
+      {
+        field: "course_max_subscriptions",
+        type: "number",
+        description: "The total number of subscriptions allowed in the course",
+      },
+      {
+        field: "course_validity_begin",
         type: "string",
-        description: `Multiple additional fields may be added. Simply replace "xxx" with the right field ID (do not use the "human" additional field name`,
+        description:
+          "The start of the date period during which the course is valid. Format yyyy-mm-dd",
+      },
+      {
+        field: "course_validity_end",
+        type: "string",
+        description:
+          "The end of the date period during which the course is valid. Format yyyy-mm-dd",
+      },
+      {
+        field: "batch_item_id",
+        type: "string",
+        description:
+          "This will be returned as it is in the output. It's not course data, but may be useful in some processes",
+      },
+      {
+        field: "content_partner_code",
+        type: "string",
+        description:
+          "Content partner code to associate the content partner. When empty means 'no content partner'. Can be associated only with active content partners",
+      },
+      {
+        field: "affiliate_price",
+        type: "integer",
+        description:
+          "Valid only when there's a content_partner_code defined. When empty it will be automatically calculated based on the default content partner discount. It cannot be higher than affiliate price and it cannot be negative",
+      },
+      {
+        field: "content_partner_fields",
+        type: "LearnCourseBatchImportCoursesContentPartnerFields",
+        description:
+          "It allows defining the data for the content partner additional fields with type 'Customizable for each course'",
+      },
+      {
+        field: "decommissioning",
+        type: "LearnCourseBatchImportCoursesDecommissioning",
+        description: "Decommissioning info",
       },
     ],
     options: {
-      change_user_password: {
+      update_course_info: {
         type: "boolean",
-        label: "change user password",
+        label: "Update existing course information",
         description:
-          "If set to true, all newly created users will need to update their password when first logging in",
+          "If set to true, if a listed course already exists, its details will be updated. If set to false, an error will be logged for each existing course.",
         defaultValue: false,
       },
-      update_user_info: {
+      use_code_to_update: {
         type: "boolean",
-        label: "update user info",
+        label: "Use course code for updating",
         description:
-          "If set to true, if a listed user already exists, his details will be updated, if set to false, an error will be logged for each existing user",
+          "If set to true and course_code is provided as a non-empty string, then the course_code would be used for course identification by the API. Otherwise, the course_name would be used as a fallback.",
         defaultValue: false,
       },
-      ignore_password_change_for_existing_users: {
-        type: "boolean",
-        label: "ignore password change for existing users",
-        description:
-          "If set to false, all updated users will need to update their password when logging in next time (only has any effect when update_existing_users is true as well)",
-        defaultValue: false,
-      },
-      powerUser_option: {
-        type: "dropdown",
-        label: "powerUser option",
-        options: [
-          "no_association",
-          "assigned_branch",
-          "assigned_branch_descendants",
-        ],
-        description: `Can be "no_association", "assigned_branch" or "assigned_branch_descendants". When "no_association" is selected he will not get associated. When "assigned_branch" or "assigned_branch_descendants" is selected he will be automatically assigned to the branch or to the branch and the descendants he is added to (reflects branch_name, branch_code, branch_name_path and branch_code_path settings).`,
-        defaultValue: "no_association",
-      },
-      destination_branch: {
-        type: "integer",
-        label: "destination branch",
-        description: `Refers to the internal ID for a branch used as a fallback when no one of "branch_name_path", "branch_code_path", "branch_name" or "branch_code" settings have been set or found. This parameter is mandatory only when "branch_option" is "existing"!`,
-        defaultValue: NaN,
-      },
-      branch_option: {
-        type: "dropdown",
-        label: "branch option",
-        options: ["existing", "do_nothing"],
-        description: `Can be "existing" or "do_nothing". When "existing" is selected, an error will be thrown when not a unique branch can be identified. When "do_nothing" is selected, "update_user_info" is set to TRUE and there is no branch mapped for the current user then user's branches will not be changed.`,
-        defaultValue: "do_nothing",
-      },
-      force_create_branches: {
-        type: "boolean",
-        label: "force create branches",
-        description: `"When "force_create_branches" is selected, "branch_name_path" and "branch_code_path" are used and both columns have proper value, a new branch will be created."`,
-        defaultValue: false,
-      },
-      user_destination_branch_action: {
-        type: "dropdown",
-        label: "user destination branch action",
-        options: ["add", "move"],
-        description: `This parameter would not be working for platforms created after 16/10/2019. If it's not provided the users would be added to new branches. If it's set to "add" the users would be added to new branches. If its value is "move", the users would be added to new branches and removed from all the previous ones.`,
-        defaultValue: "add",
-      },
-      send_notification_email: {
-        type: "boolean",
-        label: "send_notification_email",
-        description: `Indicates whether to send the notification to the created users`,
-        defaultValue: false,
-      },
-      multi_profiles_mode: {
-        type: "dropdown",
-        label: "multi profiles mode",
-        options: ["add_profile", "overwrite_profiles"],
-        description: `Add_profile will add the new profile to power user without modify the already assigned profile. Overwrite_profiles remove the already assigned profile to assign only the new ones. Default overwrite_profiles. This parameter would work only if the new power user management is active.`,
-        defaultValue: "overwrite_profiles",
-      },
-      provisioned_by: {
+      s3_key: {
         type: "string",
-        label: "provisioned by",
-        description: `External provisioning source`,
+        label: "Amazon S3 Key",
+        description: "Amazon S3 Key of the shared files location.",
         defaultValue: "",
+      },
+      s3_secret: {
+        type: "string",
+        label: "Amazon S3 Secret",
+        description: "Amazon S3 Secret of the shared files location.",
+        defaultValue: "",
+      },
+      s3_region: {
+        type: "string",
+        label: "Amazon S3 Region",
+        description: "Amazon S3 Region of the shared files location.",
+        defaultValue: "",
+      },
+      s3_bucket_name: {
+        type: "string",
+        label: "Amazon S3 Bucket Name",
+        description: "Amazon S3 Bucket Name of the shared files location.",
+        defaultValue: "",
+      },
+      s3_root_folder: {
+        type: "string",
+        label: "Amazon S3 Root Folder",
+        description:
+          'Amazon Root Folder of the shared files location (Do not indicate the s3 root folder as "/". Use "." instead).',
+        defaultValue: ".",
       },
     },
   },

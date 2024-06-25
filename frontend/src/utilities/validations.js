@@ -1,6 +1,6 @@
 import { typeFields } from "./typeFields";
 
-export const validateBranchData = (data, importType) => {
+const validateBranchData = (data, importType) => {
   const requiredFields = typeFields[importType].requiredFields;
   console.log("Data:", data);
   console.log("Required Fields:", requiredFields);
@@ -32,7 +32,8 @@ export const validateBranchData = (data, importType) => {
   return errors;
 };
 
-export const validateUserData = (data) => {
+const validateCourseData = (data, importType) => {
+  const requiredFields = typeFields[importType].requiredFields;
   const errors = [];
   const headers = data[0];
 
@@ -41,13 +42,17 @@ export const validateUserData = (data) => {
     return errors;
   }
 
-  data.forEach((row, index) => {
-    if (!row.user_id && !row.username) {
-      errors.push(
-        `Row ${index + 1}: Missing required fields: user_id or username`
-      );
-    }
-  });
+  const missingRequiredFields = requiredFields.filter(
+    (field) => !headers.includes(field.field)
+  );
+
+  if (missingRequiredFields.length > 0) {
+    errors.push(
+      `Missing required fields: ${missingRequiredFields
+        .map((field) => field.field)
+        .join(", ")}`
+    );
+  }
 
   return errors;
 };
@@ -56,8 +61,8 @@ export const validateData = (data, importType) => {
   switch (importType) {
     case "branches":
       return validateBranchData(data, importType);
-    case "users":
-      return validateUserData(data);
+    case "courses":
+      return validateCourseData(data, importType);
     default:
       return [`Unknown import type: ${importType}`];
   }
