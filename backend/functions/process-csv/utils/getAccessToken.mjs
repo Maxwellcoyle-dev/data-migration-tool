@@ -1,6 +1,6 @@
 import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 
-const client = new DynamoDBClient({ region: "us-east-02" });
+const client = new DynamoDBClient({ region: "us-east-2" });
 
 export const getAccessToken = async (userId, domain) => {
   const params = {

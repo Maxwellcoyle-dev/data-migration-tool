@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import useGetPlatforms from "../hooks/useGetPlatforms";
 
-const Authentication = ({ user, setCurrentPlatformInfo }) => {
+const Authentication = ({ user, setCurrentPlatformInfo, setAuthenticated }) => {
   const [editPlatformDetails, setEditPlatformDetails] = useState(false);
   const [domain, setDomain] = useState("");
   const [clientId, setClientId] = useState("");
@@ -11,8 +11,6 @@ const Authentication = ({ user, setCurrentPlatformInfo }) => {
   const { platforms } = useGetPlatforms({ userId: user.userId });
 
   const handleSaveCredntials = () => {
-    console.log("Save", domain, clientId, clientSecret);
-
     setEditPlatformDetails(!editPlatformDetails);
     setCurrentPlatformInfo({ domain, clientId, clientSecret });
   };
@@ -44,9 +42,7 @@ const Authentication = ({ user, setCurrentPlatformInfo }) => {
   };
 
   const handleSelectPlatform = (index) => {
-    console.log("Selected Index", index);
     const platform = platforms[index];
-    console.log("Selected Platform", platform);
     setDomain(platform?.platformUrl);
     setClientId(platform?.clientId);
     setClientSecret(platform?.clientSecret);
@@ -55,6 +51,17 @@ const Authentication = ({ user, setCurrentPlatformInfo }) => {
       clientId: platform?.clientId,
       clientSecret: platform.clientSecret,
     });
+
+    // if the platform.timeStamp is less than 60 minutes old, set authenticated to true
+    const timeStamp = new Date(platform.timeStamp).getTime();
+    const currentTime = new Date().getTime();
+    const difference = currentTime - timeStamp;
+    const minutes = difference / 1000 / 60;
+    if (minutes < 60) {
+      setAuthenticated(true);
+    } else {
+      setAuthenticated(false);
+    }
   };
 
   return (

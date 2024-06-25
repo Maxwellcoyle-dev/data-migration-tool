@@ -1,57 +1,69 @@
-export const validateBranchData = (data, requiredFields) => {
-  try {
-    const errors = [];
-    const headers = Object.keys(data[0]);
-    const missingRequiredFields = requiredFields.filter((field) => {
-      if (field.field === "name_*") {
-        return !headers.some((header) => header.startsWith("name_"));
-      }
-      return !headers.includes(field.field);
-    });
-    if (missingRequiredFields.length > 0) {
-      errors.push(
-        `Missing required fields: ${missingRequiredFields
-          .map((field) => field.field)
-          .join(", ")}`
-      );
-    }
+import { typeFields } from "./typeFields";
+
+const validateBranchData = (data, importType) => {
+  const requiredFields = typeFields[importType].requiredFields;
+  console.log("Data:", data);
+  console.log("Required Fields:", requiredFields);
+
+  const errors = [];
+  const headers = data[0];
+
+  if (!headers) {
+    errors.push("No headers found in the CSV file.");
     return errors;
-  } catch (error) {
-    console.error("Error validating branch data:", error);
-    throw error;
   }
+
+  // Check for missing required fields
+  const missingRequiredFields = requiredFields.filter((field) => {
+    if (field.field === "name_*") {
+      return !headers.some((header) => header.startsWith("name_"));
+    }
+    return !headers.includes(field.field);
+  });
+
+  if (missingRequiredFields.length > 0) {
+    errors.push(
+      `Missing required fields: ${missingRequiredFields
+        .map((field) => field.field)
+        .join(", ")}`
+    );
+  }
+
+  return errors;
 };
 
-export const validateUserData = (data) => {
-  try {
-    const errors = [];
-    data.forEach((row, index) => {
-      if (!row.user_id && !row.username) {
-        errors.push(
-          `Row ${index + 1}: Missing required fields: user_id or username`
-        );
-      }
-    });
+const validateCourseData = (data, importType) => {
+  const requiredFields = typeFields[importType].requiredFields;
+  const errors = [];
+  const headers = data[0];
+
+  if (!headers) {
+    errors.push("No headers found in the CSV file.");
     return errors;
-  } catch (error) {
-    console.error("Error validating user data:", error);
-    throw error;
   }
+
+  const missingRequiredFields = requiredFields.filter(
+    (field) => !headers.includes(field.field)
+  );
+
+  if (missingRequiredFields.length > 0) {
+    errors.push(
+      `Missing required fields: ${missingRequiredFields
+        .map((field) => field.field)
+        .join(", ")}`
+    );
+  }
+
+  return errors;
 };
 
-export const validateData = (data, importType, requiredFields) => {
-  try {
-    console.log(`Validating data for import type: ${importType}`);
-    switch (importType) {
-      case "branches":
-        return validateBranchData(data, requiredFields);
-      case "users":
-        return validateUserData(data);
-      default:
-        return [`Unknown import type: ${importType}`];
-    }
-  } catch (error) {
-    console.error("Error in validateData function:", error);
-    throw error;
+export const validateData = (data, importType) => {
+  switch (importType) {
+    case "branches":
+      return validateBranchData(data, importType);
+    case "courses":
+      return validateCourseData(data, importType);
+    default:
+      return [`Unknown import type: ${importType}`];
   }
 };

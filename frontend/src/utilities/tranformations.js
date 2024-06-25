@@ -1,4 +1,4 @@
-export const transformBranchData = (data) => {
+const transformBranchData = (data) => {
   const branchData = data.map((row) => {
     const translations = {};
     // Loop over each property in the row
@@ -15,8 +15,8 @@ export const transformBranchData = (data) => {
     return {
       code: row.code,
       translations: translations,
-      sibling: row.sibling || null, // Use null if sibling is undefined
-      parent_code: row.parent_code || null, // Use null if parent_code is undefined
+      ...(row.parent_code && { parent_code: row.parent_code }),
+      ...(row.sibling && { sibling: row.sibling }),
     };
   });
 
@@ -24,51 +24,72 @@ export const transformBranchData = (data) => {
   return branchData;
 };
 
-export const transformUserData = (data) => {
-  return data.map((row) => {
-    const transformedRow = {};
-
-    // List of all possible fields
-    const fields = [
-      "user_id",
-      "username",
-      "first_name",
-      "last_name",
-      "new_username",
-      "password",
-      "timezone",
-      "date_format",
-      "active",
-      "expiration_date",
-      "level",
-      "profile",
-      "manager_xxx",
-      "is_manager",
-      "language",
-      "branch_name_path",
-      "branch_code_path",
-      "branch_name",
-      "branch_code",
-      "field_xxx",
-    ];
-
-    // Iterate over the possible fields and add them to transformedRow if they exist in the row
-    fields.forEach((field) => {
-      if (row[field] !== undefined && row[field] !== null) {
-        transformedRow[field] = row[field];
-      }
-    });
-
-    return transformedRow;
+const transformCourseData = (data) => {
+  const courseData = data.map((row) => {
+    return {
+      course_type: row.course_type,
+      course_name: row.course_name,
+      course_description: row.course_description,
+      ...(row.course_code && { course_code: row.course_code }),
+      ...(row.course_provider && { course_provider: row.course_provider }),
+      ...(row.external_course_id && {
+        external_course_id: row.external_course_id,
+      }),
+      ...(row.course_cover && { course_cover: row.course_cover }),
+      ...(row.course_cover_id && { course_cover_id: row.course_cover_id }),
+      ...(row.course_cover_name && {
+        course_cover_name: row.course_cover_name,
+      }),
+      ...(row.course_language && { course_language: row.course_language }),
+      ...(row.course_published && { course_published: row.course_published }),
+      ...(row.course_category_id && {
+        course_category_id: row.course_category_id,
+      }),
+      ...(row.course_category && { course_category: row.course_category }),
+      ...(row.course_difficulty && {
+        course_difficulty: row.course_difficulty,
+      }),
+      ...(row.user_enroll && { user_enroll: row.user_enroll }),
+      ...(row.user_enroll_begin && {
+        user_enroll_begin: row.user_enroll_begin,
+      }),
+      ...(row.user_enroll_end && { user_enroll_end: row.user_enroll_end }),
+      ...(row.course_avg_time && { course_avg_time: row.course_avg_time }),
+      ...(row.course_for_sale && { course_for_sale: row.course_for_sale }),
+      ...(row.course_price && { course_price: row.course_price }),
+      ...(row.course_status && { course_status: row.course_status }),
+      ...(row.course_credits && { course_credits: row.course_credits }),
+      ...(row.course_max_subscriptions && {
+        course_max_subscriptions: row.course_max_subscriptions,
+      }),
+      ...(row.course_validity_begin && {
+        course_validity_begin: row.course_validity_begin,
+      }),
+      ...(row.course_validity_end && {
+        course_validity_end: row.course_validity_end,
+      }),
+      ...(row.batch_item_id && { batch_item_id: row.batch_item_id }),
+      ...(row.content_partner_code && {
+        content_partner_code: row.content_partner_code,
+      }),
+      ...(row.affiliate_price && { affiliate_price: row.affiliate_price }),
+      ...(row.content_partner_fields && {
+        content_partner_fields: row.content_partner_fields,
+      }),
+      ...(row.decommissioning && { decommissioning: row.decommissioning }),
+    };
   });
+
+  console.log("courseData", courseData);
+  return courseData;
 };
 
 export const transformData = (data, importType) => {
   switch (importType) {
     case "branches":
       return transformBranchData(data);
-    case "users":
-      return transformUserData(data);
+    case "courses":
+      return transformCourseData(data);
     // Add more cases for different import types
     default:
       throw new Error(`Unknown import type: ${importType}`);

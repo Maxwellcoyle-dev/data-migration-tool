@@ -5,18 +5,49 @@ import {
   IoIosCheckmarkCircle,
   IoMdWarning,
 } from "react-icons/io";
+import { ThreeDots } from "react-loader-spinner";
+
 import CSVUploader from "../components/CSVUploader.jsx";
 import CSVPreview from "../components/CSVPreview.jsx";
+import LogDisplay from "../components/LogDisplay.jsx";
 import { typeFields } from "../utilities/typeFields.js";
+
+import usePostCSV from "../hooks/usePostCSV.js";
 
 const Home = ({ currentPlatformInfo, user }) => {
   const [csvData, setCsvData] = useState([]);
   const [csvFile, setCsvFile] = useState(null);
   const [importType, setImportType] = useState("branches");
   const [importOptions, setImportOptions] = useState({});
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [uploadError, setUploadError] = useState("");
+  const [csvValidationError, setCsvValidationError] = useState("");
+  const [csvtransformError, setCsvTransformError] = useState("");
+  const [csvReadyForImport, setCsvReadyForImport] = useState(false);
   const [fieldsVisible, setFieldsVisible] = useState(false);
+  const [responseLogs, setResponseLogs] = useState({
+    success: [],
+    errors: [],
+    showLogs: false,
+  });
+
+  const {
+    mutate,
+    uploadCSVResponseData,
+    csvUploadError,
+    isPending,
+    isError,
+    reset,
+  } = usePostCSV();
+
+  useEffect(() => {
+    if (
+      csvData.length > 0 &&
+      (csvValidationError === "" || csvtransformError === "")
+    ) {
+      setCsvReadyForImport(true);
+    } else {
+      setCsvReadyForImport(false);
+    }
+  }, [csvData, csvValidationError, csvtransformError]);
 
   useEffect(() => {
     const options = {};
@@ -32,15 +63,43 @@ const Home = ({ currentPlatformInfo, user }) => {
   const handleUpload = (previewData, file) => {
     setCsvData(previewData); // Set preview data
     setCsvFile(file); // Set the actual file
-    setUploadSuccess(true);
-    setUploadError("");
+    setCsvTransformError("");
+    setCsvValidationError("");
+    setResponseLogs({
+      success: [],
+      errors: [],
+      showLogs: false,
+    });
+    reset();
   };
 
-  const handleSubmit = () => {
-    console.log("importOptions:", importOptions);
-    console.log("importType:", importType);
-    console.log("csvFile:", csvFile);
+  useEffect(() => {
+    if (uploadCSVResponseData?.data) {
+      console.log("uploadCSVResponseData", uploadCSVResponseData);
+      const successLogs = uploadCSVResponseData.data.data.data.filter(
+        (log) => log.success
+      );
+      console.log("successLogs", successLogs);
+      const errorLogs = uploadCSVResponseData.data.data.data.filter(
+        (log) => !log.success
+      );
+      console.log("errorLogs", errorLogs);
 
+      setResponseLogs({
+        success: successLogs,
+        errors: errorLogs,
+        showLogs: true,
+      });
+    }
+  }, [uploadCSVResponseData]);
+
+  useEffect(() => {
+    console.log("uploadCSVResponseData", uploadCSVResponseData);
+    console.log("csvUploadError", csvUploadError);
+    console.log("csvUploadError message", csvUploadError?.message);
+  }, [uploadCSVResponseData, csvUploadError]);
+
+  const handleSubmit = () => {
     const formData = new FormData();
     formData.append("file", csvFile); // Append the actual CSV file
     formData.append("options", JSON.stringify(importOptions));
@@ -48,25 +107,9 @@ const Home = ({ currentPlatformInfo, user }) => {
     formData.append("userId", user.userId);
     formData.append("domain", currentPlatformInfo.domain);
 
-    fetch(
-      `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/process-csv`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          setUploadSuccess(true);
-          setUploadError("");
-        } else {
-          setUploadError(data.message);
-        }
-      })
-      .catch((error) => {
-        setUploadError(error.message);
-      });
+    mutate(formData);
+
+    setCsvData([]);
   };
 
   const handleOptionChange = (optionKey, value) => {
@@ -83,8 +126,8 @@ const Home = ({ currentPlatformInfo, user }) => {
   const handleImportTypeSelect = (type) => {
     setImportType(type);
     setCsvData([]);
-    setUploadSuccess(false);
-    setUploadError("");
+    setCsvTransformError("");
+    setCsvValidationError("");
   };
 
   const renderFields = (fields, title) => (
@@ -139,8 +182,11 @@ const Home = ({ currentPlatformInfo, user }) => {
             value={importType}
             onChange={(e) => handleImportTypeSelect(e.target.value)}
           >
-            <option value="branches">Branches</option>
-            <option value="users">Users</option>
+            {Object.keys(typeFields).map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -200,32 +246,61 @@ const Home = ({ currentPlatformInfo, user }) => {
           <div style={{ width: "50%" }}>
             <CSVUploader
               onUpload={handleUpload}
-              setUploadError={setUploadError}
+              setCsvValidationError={setCsvValidationError}
+              setCsvTransformError={setCsvTransformError}
               importType={importType}
-              requiredFields={typeFields[importType].requiredFields}
-              optionalFields={typeFields[importType].optionalFields}
             />
           </div>
 
           <div style={{ width: "50%" }}>
-            {uploadSuccess ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                  alignItems: "center",
-                }}
-              >
-                <IoIosCheckmarkCircle
-                  style={{ color: "green", fontSize: 50 }}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                alignItems: "center",
+              }}
+            >
+              {isPending && (
+                <ThreeDots
+                  visible={true}
+                  height="80"
+                  width="80"
+                  color="#4fa94d"
+                  radius="9"
+                  ariaLabel="three-dots-loading"
                 />
-                <h2>Successfully uploaded CSV data</h2>
-                <button onClick={handleSubmit} style={styles.button}>
-                  Import Data
-                </button>
-              </div>
-            ) : (
+              )}
+              {isError && (
+                <p style={{ color: "red" }}>{csvUploadError.message}</p>
+              )}
+              {uploadCSVResponseData?.data && (
+                <>
+                  <p>
+                    <strong>Successful Rows: </strong>
+                    {responseLogs.success.length}
+                  </p>
+                  <p>
+                    <strong>Failed Rows: </strong>
+                    {responseLogs.errors.length}
+                  </p>
+                </>
+              )}
+              {csvReadyForImport && (
+                <>
+                  <IoIosCheckmarkCircle
+                    style={{ color: "green", fontSize: 50 }}
+                  />
+                  <h2>CSV ready for import</h2>
+                  <button onClick={handleSubmit} style={styles.button}>
+                    Import Data
+                  </button>
+                </>
+              )}
+            </div>
+
+            {(csvValidationError.length > 0 ||
+              csvtransformError.length > 0) && (
               <div
                 style={{
                   display: "flex",
@@ -237,20 +312,29 @@ const Home = ({ currentPlatformInfo, user }) => {
               >
                 <IoMdWarning style={{ color: "red", fontSize: 50 }} />
                 <h2>There's a problem with your csv</h2>
-                <p>{uploadError}</p>
+                {csvValidationError.length > 0 && (
+                  <p>Validation Error: {csvValidationError} </p>
+                )}
+                {csvtransformError.length > 0 && (
+                  <p>Transform Error: {csvtransformError} </p>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        <CSVPreview
-          csvData={csvData}
-          importType={importType}
-          options={typeFields[importType].options}
-          importOptions={importOptions}
-          handleOptionChange={handleOptionChange}
-        />
+        {csvData.length > 0 && (
+          <CSVPreview
+            csvData={csvData}
+            importType={importType}
+            options={typeFields[importType].options}
+            importOptions={importOptions}
+            handleOptionChange={handleOptionChange}
+          />
+        )}
       </div>
+
+      {responseLogs.showLogs && <LogDisplay responseLogs={responseLogs} />}
     </div>
   );
 };

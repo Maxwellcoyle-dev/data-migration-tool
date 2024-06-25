@@ -4,7 +4,6 @@ import OptionsTable from "./OptionsTable";
 
 const CSVPreview = ({
   csvData,
-  importType,
   options,
   importOptions,
   handleOptionChange,
@@ -17,6 +16,9 @@ const CSVPreview = ({
         Cell: ({ value }) => {
           if (typeof value === "object" && value !== null) {
             return JSON.stringify(value);
+          }
+          if (typeof value === "string" && value.length > 30) {
+            return `${value.substring(0, 50)}...`;
           }
           return value;
         },
@@ -39,69 +41,73 @@ const CSVPreview = ({
   return (
     <div style={{ fontFamily: "Arial, sans-serif" }}>
       <h4>CSV Preview</h4>
-      <table
-        {...getTableProps()}
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "1em",
-        }}
-      >
-        <thead style={{ backgroundColor: "#f2f2f2" }}>
-          {headerGroups.map((headerGroup) => {
-            const { key, ...restHeaderGroupProps } =
-              headerGroup.getHeaderGroupProps();
-            return (
-              <tr key={key} {...restHeaderGroupProps}>
-                {headerGroup.headers.map((column) => {
-                  const { key: columnKey, ...restColumnProps } =
-                    column.getHeaderProps();
-                  return (
-                    <th
-                      key={columnKey}
-                      {...restColumnProps}
-                      style={{
-                        borderBottom: "1px solid #ddd",
-                        padding: "0.5em",
-                        textAlign: "left",
-                      }}
-                    >
-                      {column.render("Header")}
-                    </th>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            const { key, ...restRowProps } = row.getRowProps();
-            return (
-              <tr
-                key={key}
-                {...restRowProps}
-                style={{ borderBottom: "1px solid #ddd" }}
-              >
-                {row.cells.map((cell) => {
-                  const { key: cellKey, ...restCellProps } =
-                    cell.getCellProps();
-                  return (
-                    <td
-                      key={cellKey}
-                      {...restCellProps}
-                      style={{ padding: "0.5em" }}
-                    >
-                      {cell.render("Cell")}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div style={{ overflowX: "scroll", width: "100%" }}>
+        <table
+          {...getTableProps()}
+          style={{
+            width: "100%",
+            maxWidth: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "1em",
+          }}
+        >
+          <thead style={{ backgroundColor: "#f2f2f2" }}>
+            {headerGroups.map((headerGroup) => {
+              const { key, ...restHeaderGroupProps } =
+                headerGroup.getHeaderGroupProps();
+              return (
+                <tr key={key} {...restHeaderGroupProps}>
+                  {headerGroup.headers.map((column) => {
+                    const { key: columnKey, ...restColumnProps } =
+                      column.getHeaderProps();
+                    return (
+                      <th
+                        key={columnKey}
+                        {...restColumnProps}
+                        style={{
+                          borderBottom: "1px solid #ddd",
+                          padding: "0.5em",
+                          textAlign: "left",
+                          minWidth: "fit-content",
+                        }}
+                      >
+                        {column.render("Header")}
+                      </th>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+            {rows.map((row) => {
+              prepareRow(row);
+              const { key, ...restRowProps } = row.getRowProps();
+              return (
+                <tr
+                  key={key}
+                  {...restRowProps}
+                  style={{ borderBottom: "1px solid #ddd" }}
+                >
+                  {row.cells.map((cell) => {
+                    const { key: cellKey, ...restCellProps } =
+                      cell.getCellProps();
+                    return (
+                      <td
+                        key={cellKey}
+                        {...restCellProps}
+                        style={{ padding: "0.5em" }}
+                      >
+                        {cell.render("Cell")}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <OptionsTable
         options={options}
