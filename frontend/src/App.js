@@ -12,6 +12,9 @@ import NavBar from "./components/NavBar";
 // Hooks
 import useGetPlatforms from "./hooks/useGetPlatforms";
 
+// context
+import { ResponseLogProvider } from "./context/responseLogContext";
+
 const App = ({ user }) => {
   const [currentPlatformInfo, setCurrentPlatformInfo] = useState({
     domain: "",
@@ -46,33 +49,35 @@ const App = ({ user }) => {
   }, [platforms]);
 
   return (
-    <div>
-      <NavBar
-        domain={currentPlatformInfo.domain}
-        authenticated={authenticated}
-      />
-      <Routes>
-        <Route
-          index
-          path="/"
-          element={
-            <Home currentPlatformInfo={currentPlatformInfo} user={user} />
-          }
+    <ResponseLogProvider>
+      <div>
+        <NavBar
+          domain={currentPlatformInfo.domain}
+          authenticated={authenticated}
         />
-        <Route
-          path="/authentication"
-          element={
-            <Authentication
-              user={user}
-              setCurrentPlatformInfo={setCurrentPlatformInfo}
-              authenticated={authenticated}
-              setAuthenticated={setAuthenticated}
-            />
-          }
-        />
-        <Route path="/callback" element={<Callback />} />
-      </Routes>
-    </div>
+        <Routes>
+          <Route
+            index
+            path="/"
+            element={
+              <Home currentPlatformInfo={currentPlatformInfo} user={user} />
+            }
+          />
+          <Route
+            path="/authentication"
+            element={
+              <Authentication
+                user={user}
+                setCurrentPlatformInfo={setCurrentPlatformInfo}
+                authenticated={authenticated}
+                setAuthenticated={setAuthenticated}
+              />
+            }
+          />
+          <Route path="/callback" element={<Callback />} />
+        </Routes>
+      </div>
+    </ResponseLogProvider>
   );
 };
 

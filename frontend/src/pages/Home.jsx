@@ -12,6 +12,10 @@ import CSVPreview from "../components/CSVPreview.jsx";
 import LogDisplay from "../components/LogDisplay.jsx";
 import { typeFields } from "../utilities/typeFields.js";
 
+import useProcessResponse from "../hooks/useProcessResponse.js";
+
+import { useResponseLogContext } from "../context/responseLogContext";
+
 import usePostCSV from "../hooks/usePostCSV.js";
 
 const Home = ({ currentPlatformInfo, user }) => {
@@ -23,11 +27,9 @@ const Home = ({ currentPlatformInfo, user }) => {
   const [csvtransformError, setCsvTransformError] = useState("");
   const [csvReadyForImport, setCsvReadyForImport] = useState(false);
   const [fieldsVisible, setFieldsVisible] = useState(false);
-  const [responseLogs, setResponseLogs] = useState({
-    success: [],
-    errors: [],
-    showLogs: false,
-  });
+
+  const { responseLogs, setResponseLogs } = useResponseLogContext();
+  const processLogs = useProcessResponse();
 
   const {
     mutate,
@@ -76,20 +78,11 @@ const Home = ({ currentPlatformInfo, user }) => {
   useEffect(() => {
     if (uploadCSVResponseData?.data) {
       console.log("uploadCSVResponseData", uploadCSVResponseData);
-      const successLogs = uploadCSVResponseData.data.data.data.filter(
-        (log) => log.success
-      );
-      console.log("successLogs", successLogs);
-      const errorLogs = uploadCSVResponseData.data.data.data.filter(
-        (log) => !log.success
-      );
-      console.log("errorLogs", errorLogs);
 
-      setResponseLogs({
-        success: successLogs,
-        errors: errorLogs,
-        showLogs: true,
-      });
+      processLogs(
+        uploadCSVResponseData.data.importType,
+        uploadCSVResponseData.data
+      );
     }
   }, [uploadCSVResponseData]);
 
@@ -100,14 +93,16 @@ const Home = ({ currentPlatformInfo, user }) => {
   }, [uploadCSVResponseData, csvUploadError]);
 
   const handleSubmit = () => {
+    console.log("Submitting data...");
     const formData = new FormData();
     formData.append("file", csvFile); // Append the actual CSV file
     formData.append("options", JSON.stringify(importOptions));
-    formData.append("importType", importType);
     formData.append("userId", user.userId);
     formData.append("domain", currentPlatformInfo.domain);
 
-    mutate(formData);
+    console.log("importTYpe", importType);
+
+    mutate({ formData, importType });
 
     setCsvData([]);
   };

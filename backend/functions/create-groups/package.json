@@ -1,19 +1,17 @@
 {
-  "name": "process-csv",
+  "name": "create-groups",
   "version": "1.0.0",
   "description": "",
   "main": "app.mjs",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/client-dynamodb": "^3.609.0",
     "axios": "^1.7.2",
     "busboy": "^1.6.0",
     "csv-parser": "^3.0.0",
-    "stream": "^0.0.2"
-  }
+    "stream": "^0.0.3"  }
 }

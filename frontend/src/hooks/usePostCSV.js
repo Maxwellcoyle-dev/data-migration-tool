@@ -1,7 +1,18 @@
 import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
+import {
+  createBranches,
+  createCourses,
+  createGroups,
+} from "../api/lambdaEndpoints";
 
 const usePostCSV = () => {
+  const importTypeMap = {
+    branches: createBranches,
+    courses: createCourses,
+    groups: createGroups,
+  };
+
   const {
     mutate,
     data: uploadCSVResponseData,
@@ -10,18 +21,18 @@ const usePostCSV = () => {
     isError,
     reset,
   } = useMutation({
-    mutationFn: async (formData) => {
+    mutationFn: async ({ formData, importType }) => {
       try {
-        const response = await axios.post(
-          `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/process-csv`,
-          formData
-        );
-        console.log("response:", response.data);
+        const apiFunction = importTypeMap[importType];
+        if (!apiFunction) {
+          throw new Error("Invalid import type");
+        }
+        const response = await apiFunction(formData);
         return response.data;
       } catch (error) {
-        console.log("Full Axios Error:", error.response);
+        console.log("Full Axios Error:", error);
 
-        if (error.response.data) {
+        if (error.response && error.response.data) {
           const errorMessage = `${error.response.data.data.error.name} -- ${error.response.data.data.error.message[0]}`;
           console.log("Error message:", errorMessage);
 

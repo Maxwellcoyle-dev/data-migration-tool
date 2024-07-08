@@ -60,19 +60,59 @@ Resources:
           CALLBACK_URI: https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback
           FRONTEND_URL: http://localhost:3000/callback?access_token=
 
-  ProcessCSVFunction:
+  CreateGroupsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/process-csv/
+      CodeUri: functions/create-groups/
       Handler: app.handler
       Runtime: nodejs20.x
       Architectures:
         - x86_64
       Events:
-        PostCSV:
+        CreateGroups:
           Type: Api
           Properties:
-            Path: /process-csv
+            Path: /create-groups
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+  CreateCoursesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/create-courses/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        CreateCourses:
+          Type: Api
+          Properties:
+            Path: /create-courses
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+  CreateBranchesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/create-branches/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        CreateBranches:
+          Type: Api
+          Properties:
+            Path: /create-branches
             Method: POST
       Policies:
         - DynamoDBCrudPolicy:
@@ -104,9 +144,17 @@ Outputs:
     Description: "Auth Callback Function ARN"
     Value: !GetAtt AuthCallbackFunction.Arn
 
-  ProcessCSVFunction:
-    Description: "Process CSV Function ARN"
-    Value: !GetAtt ProcessCSVFunction.Arn
+  CreateGroupsFunction:
+    Description: "Create Groups Function ARN"
+    Value: !GetAtt CreateGroupsFunction.Arn
+
+  CreateCoursesFunction:
+    Description: "Create Courses Function ARN"
+    Value: !GetAtt CreateCoursesFunction.Arn
+
+  CreateBranchesFunction:
+    Description: "Create Branches Function ARN"
+    Value: !GetAtt CreateBranchesFunction.Arn
 
   ScanAccessTokenTableFunction:
     Description: "Scan Access Token Table Function ARN"
