@@ -1,10 +1,10 @@
-import { processMultipartForm, csvToJson } from "../create_catalogs/utils/multipartUtils.mjs";
-import { transformBranches } from "../create_catalogs/utils/transformCatalogs.mjs";
-import { branchTypeFields } from "../create_catalogs/utils/catalogTypeFields.mjs";
-import { getAccessToken } from "../create_catalogs/utils/getAccessToken.mjs";
+import { processMultipartForm, csvToJson } from "./utils/multipartUtils.mjs";
+import { transformCatalogs } from "./utils/transformCatalogs.mjs";
+import { catalogTypeFields } from "./utils/catalogTypeFields.mjs";
+import { getAccessToken } from "./utils/getAccessToken.mjs";
 
 // Function to post data to Docebo
-import { createBranches } from "./createBranches.mjs";
+import { createCatalogs } from "./createCatalogs.mjs";
 
 export const handler = async (event) => {
   console.log("Received event:", JSON.stringify(event));
@@ -15,10 +15,10 @@ export const handler = async (event) => {
     console.log("Received data:", fileData, optionsData, userId, domain);
 
     const jsonData = await csvToJson(fileData);
-    const transformedData = transformBranches(jsonData);
+    const transformedData = transformCatalogs(jsonData);
     const accessToken = await getAccessToken(userId, domain);
 
-    const endpoint = branchTypeFields.endpoint;
+    const endpoint = catalogTypeFields.endpoint;
     const url = `https://${domain}${endpoint}`;
     const headers = {
       Authorization: `Bearer ${accessToken}`,
@@ -26,7 +26,7 @@ export const handler = async (event) => {
     };
     const body = { items: transformedData, options: optionsData };
 
-    const apiResponse = await createBranches(url, headers, body);
+    const apiResponse = await createCatalogs(url, headers, body);
 
     console.log("API response:", apiResponse);
 

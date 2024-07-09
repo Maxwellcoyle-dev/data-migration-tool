@@ -8,7 +8,7 @@ const FieldRenderer = ({ importType, fieldsVisible, typeFields }) => (
   <Collapse
     size="large"
     style={{ border: "1px solid lightgray" }}
-    expandIconPosition="left"
+    expandIconPosition="start"
     defaultActiveKey={fieldsVisible ? ["1"] : []}
   >
     <Panel

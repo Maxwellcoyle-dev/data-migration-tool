@@ -1,9 +1,9 @@
-import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 import {
   createBranches,
   createCourses,
   createGroups,
+  createCatalogs,
 } from "../api/lambdaEndpoints";
 
 const usePostCSV = () => {
@@ -11,6 +11,7 @@ const usePostCSV = () => {
     branches: createBranches,
     courses: createCourses,
     groups: createGroups,
+    catalogs: createCatalogs,
   };
 
   const {

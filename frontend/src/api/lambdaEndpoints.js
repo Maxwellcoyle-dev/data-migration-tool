@@ -12,6 +12,10 @@ export const createCourses = async (formData) => {
 
 export const createBranches = async (formData) => {
   const response = await axiosInstance.post(`/create-branches/`, formData);
-  console.log("response", response);
+  return response;
+};
+
+export const createCatalogs = async (formData) => {
+  const response = await axiosInstance.post(`/create-catalogs/`, formData);
   return response;
 };

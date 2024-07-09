@@ -9,6 +9,18 @@ const transformGroupData = (data) => {
   return groupData;
 };
 
+const transformCatalogData = (data) => {
+  const catalogData = data.map((row) => {
+    return {
+      code: row.code,
+      name: row.name,
+      ...(row.description && { description: row.description }),
+    };
+  });
+  console.log("catalogData", catalogData);
+  return catalogData;
+};
+
 const transformBranchData = (data) => {
   const branchData = data.map((row) => {
     const translations = {};
@@ -103,6 +115,8 @@ export const transformData = (data, importType) => {
       return transformCourseData(data);
     case "groups":
       return transformGroupData(data);
+    case "catalogs":
+      return transformCatalogData(data);
     default:
       throw new Error(`Unknown import type: ${importType}`);
   }
