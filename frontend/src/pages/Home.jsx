@@ -9,7 +9,6 @@ import { ThreeDots } from "react-loader-spinner";
 
 import CSVUploader from "../components/CSVUploader.jsx";
 import CSVPreview from "../components/CSVPreview.jsx";
-import LogDisplay from "../components/LogDisplay.jsx";
 import { typeFields } from "../utilities/typeFields.js";
 
 import useProcessResponse from "../hooks/useProcessResponse.js";
@@ -17,6 +16,7 @@ import useProcessResponse from "../hooks/useProcessResponse.js";
 import { useResponseLogContext } from "../context/responseLogContext";
 
 import usePostCSV from "../hooks/usePostCSV.js";
+import DataImportResults from "../components/ImportLogger.jsx";
 
 const Home = ({ currentPlatformInfo, user }) => {
   const [csvData, setCsvData] = useState([]);
@@ -28,7 +28,6 @@ const Home = ({ currentPlatformInfo, user }) => {
   const [csvReadyForImport, setCsvReadyForImport] = useState(false);
   const [fieldsVisible, setFieldsVisible] = useState(false);
 
-  const { responseLogs, setResponseLogs } = useResponseLogContext();
   const processLogs = useProcessResponse();
 
   const {
@@ -67,11 +66,7 @@ const Home = ({ currentPlatformInfo, user }) => {
     setCsvFile(file); // Set the actual file
     setCsvTransformError("");
     setCsvValidationError("");
-    setResponseLogs({
-      success: [],
-      errors: [],
-      showLogs: false,
-    });
+
     reset();
   };
 
@@ -273,11 +268,11 @@ const Home = ({ currentPlatformInfo, user }) => {
                 <>
                   <p>
                     <strong>Successful Rows: </strong>
-                    {responseLogs.success.length}
+                    {/* {responseLogs.success.length} */}
                   </p>
                   <p>
                     <strong>Failed Rows: </strong>
-                    {responseLogs.errors.length}
+                    {/* {responseLogs.errors.length} */}
                   </p>
                 </>
               )}
@@ -329,7 +324,9 @@ const Home = ({ currentPlatformInfo, user }) => {
         )}
       </div>
 
-      {responseLogs.showLogs && <LogDisplay responseLogs={responseLogs} />}
+      {uploadCSVResponseData && (
+        <DataImportResults results={uploadCSVResponseData} />
+      )}
     </div>
   );
 };

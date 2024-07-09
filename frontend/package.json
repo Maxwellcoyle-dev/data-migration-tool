@@ -10,9 +10,11 @@
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
     "amplify": "^0.0.11",
+    "antd": "^5.19.1",
     "aws-amplify": "^6.3.6",
     "aws-amplify-react": "^5.1.43",
     "axios": "^1.7.2",
+    "file-saver": "^2.0.5",
     "ngrok": "^5.0.0-beta.2",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",
@@ -23,7 +25,8 @@
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",
     "react-table": "^7.8.0",
-    "web-vitals": "^2.1.0"
+    "web-vitals": "^2.1.0",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
