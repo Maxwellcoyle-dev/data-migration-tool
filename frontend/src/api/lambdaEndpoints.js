@@ -19,3 +19,8 @@ export const createCatalogs = async (formData) => {
   const response = await axiosInstance.post(`/create-catalogs/`, formData);
   return response;
 };
+
+export const createEnrollments = async (formData) => {
+  const response = await axiosInstance.post(`/create-enrollments/`, formData);
+  return response;
+};

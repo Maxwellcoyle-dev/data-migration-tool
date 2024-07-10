@@ -4,6 +4,7 @@ import {
   createCourses,
   createGroups,
   createCatalogs,
+  createEnrollments,
 } from "../api/lambdaEndpoints";
 
 const usePostCSV = () => {
@@ -12,6 +13,7 @@ const usePostCSV = () => {
     courses: createCourses,
     groups: createGroups,
     catalogs: createCatalogs,
+    enrollments: createEnrollments,
   };
 
   const {
@@ -28,6 +30,7 @@ const usePostCSV = () => {
         if (!apiFunction) {
           throw new Error("Invalid import type");
         }
+        console.log("formData", formData);
         const response = await apiFunction(formData);
         return response.data;
       } catch (error) {

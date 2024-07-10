@@ -4,7 +4,9 @@ import { Select, Typography } from "antd";
 const { Title } = Typography;
 const { Option } = Select;
 
-const Header = ({ importType, handleImportTypeSelect, typeFields }) => (
+const types = ["courses", "enrollments", "catalogs", "branches", "groups"];
+
+const Header = ({ importType, handleImportTypeSelect }) => (
   <div>
     <Title level={2}>Docebo - CSV Data Importer</Title>
     <div style={{ display: "flex", alignItems: "center" }}>
@@ -16,8 +18,8 @@ const Header = ({ importType, handleImportTypeSelect, typeFields }) => (
         value={importType}
         onChange={handleImportTypeSelect}
       >
-        {Object.keys(typeFields).map((type) => (
-          <Option key={type} value={type}>
+        {types.map((type, index) => (
+          <Option key={index} value={type}>
             {type}
           </Option>
         ))}

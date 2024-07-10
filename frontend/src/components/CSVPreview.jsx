@@ -8,6 +8,7 @@ const CSVPreview = ({
   importOptions,
   handleOptionChange,
 }) => {
+
   const columns = React.useMemo(
     () =>
       Object.keys(csvData[0] || {}).map((key) => ({

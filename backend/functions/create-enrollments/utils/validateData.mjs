@@ -1,32 +1,7 @@
-import types from "./types";
+import { typeFields } from "./typeFields";
 
 const validateGroupData = (data, importType) => {
-  const requiredFields = types(importType).requiredFields;
-  const errors = [];
-  const headers = data[0];
-
-  if (!headers) {
-    errors.push("No headers found in the CSV file.");
-    return errors;
-  }
-
-  const missingRequiredFields = requiredFields.filter(
-    (field) => !headers.includes(field.field)
-  );
-
-  if (missingRequiredFields.length > 0) {
-    errors.push(
-      `Missing required fields: ${missingRequiredFields
-        .map((field) => field.field)
-        .join(", ")}`
-    );
-  }
-
-  return errors;
-};
-
-const validateCatalogData = (data, importType) => {
-  const requiredFields = types(importType).requiredFields;
+  const requiredFields = typeFields[importType].requiredFields;
   const errors = [];
   const headers = data[0];
 
@@ -51,7 +26,7 @@ const validateCatalogData = (data, importType) => {
 };
 
 const validateBranchData = (data, importType) => {
-  const requiredFields = types(importType).requiredFields;
+  const requiredFields = typeFields[importType].requiredFields;
   console.log("Data:", data);
   console.log("Required Fields:", requiredFields);
 
@@ -82,40 +57,8 @@ const validateBranchData = (data, importType) => {
   return errors;
 };
 
-const validateEnrollmentData = (data, importType) => {
-  const requiredFields = types(importType).requiredFields;
-  const errors = [];
-  const headers = data[0];
-
-  if (!headers) {
-    errors.push("No headers found in the CSV file.");
-    return errors;
-  }
-
-  const fieldPresent = (fields) =>
-    fields.some((field) => headers.includes(field.field));
-
-  // Check if either course_code or course_id is present
-  const courseFieldPair = requiredFields.filter((field) =>
-    ["course_code", "course_id"].includes(field.field)
-  );
-  if (!fieldPresent(courseFieldPair)) {
-    errors.push(`Missing required field: either course_code or course_id`);
-  }
-
-  // Check if either username or user_id is present
-  const userFieldPair = requiredFields.filter((field) =>
-    ["username", "user_id"].includes(field.field)
-  );
-  if (!fieldPresent(userFieldPair)) {
-    errors.push(`Missing required field: either username or user_id`);
-  }
-
-  return errors;
-};
-
 const validateCourseData = (data, importType) => {
-  const requiredFields = types(importType).requiredFields;
+  const requiredFields = typeFields[importType].requiredFields;
   const errors = [];
   const headers = data[0];
 
@@ -147,10 +90,6 @@ export const validateData = (data, importType) => {
       return validateCourseData(data, importType);
     case "groups":
       return validateGroupData(data, importType);
-    case "catalogs":
-      return validateCatalogData(data, importType);
-    case "enrollments":
-      return validateEnrollmentData(data, importType);
     default:
       return [`Unknown import type: ${importType}`];
   }

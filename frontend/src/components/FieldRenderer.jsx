@@ -20,8 +20,8 @@ const FieldRenderer = ({ importType, fieldsVisible, typeFields }) => (
       key="1"
     >
       <div style={{ marginTop: 10 }}>
-        {renderFields(typeFields[importType].requiredFields, "Required Fields")}
-        {renderFields(typeFields[importType].optionalFields, "Optional Fields")}
+        {renderFields(typeFields.requiredFields, "Required Fields")}
+        {renderFields(typeFields.optionalFields, "Optional Fields")}
       </div>
     </Panel>
   </Collapse>

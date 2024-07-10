@@ -6,7 +6,7 @@ import CSVPreviewSection from "../components/CSVPreviewSection";
 import DataImportResults from "../components/DataImportResults.jsx";
 import useProcessResponse from "../hooks/useProcessResponse.js";
 import usePostCSV from "../hooks/usePostCSV.js";
-import { typeFields } from "../utilities/typeFields.js";
+import types from "../utilities/types.js";
 
 const Home = ({ currentPlatformInfo, user }) => {
   const [csvData, setCsvData] = useState([]);
@@ -19,6 +19,8 @@ const Home = ({ currentPlatformInfo, user }) => {
   const [fieldsVisible, setFieldsVisible] = useState(false);
 
   const processLogs = useProcessResponse();
+
+  const typeFields = types(importType);
 
   const {
     mutate,
@@ -42,7 +44,7 @@ const Home = ({ currentPlatformInfo, user }) => {
 
   useEffect(() => {
     const options = {};
-    const importTypeConfig = typeFields[importType];
+    const importTypeConfig = types(importType);
     if (importTypeConfig.options) {
       Object.keys(importTypeConfig.options).forEach((optionKey) => {
         options[optionKey] = importTypeConfig.options[optionKey].defaultValue;
@@ -77,11 +79,31 @@ const Home = ({ currentPlatformInfo, user }) => {
     console.log("csvUploadError message", csvUploadError?.message);
   }, [uploadCSVResponseData, csvUploadError]);
 
+  // remove any options with null, undefined, empty strings values, or empty arrays
+  const cleanOptions = (options) => {
+    const cleanedOptions = {};
+    Object.keys(options).forEach((optionKey) => {
+      const optionValue = options[optionKey];
+      if (
+        optionValue !== null &&
+        optionValue !== undefined &&
+        optionValue !== "" &&
+        !(Array.isArray(optionValue) && optionValue.length === 0)
+      ) {
+        cleanedOptions[optionKey] = optionValue;
+      }
+    });
+    return cleanedOptions;
+  };
+
   const handleSubmit = () => {
     console.log("Submitting data...");
+
+    const cleanedOptions = cleanOptions(importOptions);
+
     const formData = new FormData();
     formData.append("file", csvFile);
-    formData.append("options", JSON.stringify(importOptions));
+    formData.append("options", JSON.stringify(cleanedOptions));
     formData.append("userId", user.userId);
     formData.append("domain", currentPlatformInfo.domain);
 

@@ -13,7 +13,7 @@ const CSVPreviewSection = ({
       <CSVPreview
         csvData={csvData}
         importType={importType}
-        options={typeFields[importType].options}
+        options={typeFields.options}
         importOptions={importOptions}
         handleOptionChange={handleOptionChange}
       />
