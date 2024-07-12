@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Space, Alert, Spin } from "antd";
 import CSVUploader from "../components/CSVUploader.jsx";
 import { IoIosCheckmarkCircle, IoMdWarning } from "react-icons/io";
+import { MdOutlinePending } from "react-icons/md";
 
 const CSVUploadSection = ({
   handleUpload,
@@ -27,7 +28,7 @@ const CSVUploadSection = ({
       />
     </div>
 
-    <div style={{ width: "50%" }}>
+    <div style={{ width: "50%", display: "flex", justifyContent: "center" }}>
       <div
         style={{
           display: "flex",
@@ -65,6 +66,19 @@ const CSVUploadSection = ({
         )}
       </div>
 
+      {uploadCSVResponseData?.status && (
+        <Space
+          direction="vertical"
+          style={{ textAlign: "center", marginTop: 16 }}
+        >
+          <MdOutlinePending style={{ color: "green", fontSize: 50 }} />
+          <h2>Upload Status</h2>
+          <p>
+            <strong>Status: </strong>
+            {uploadCSVResponseData.status}
+          </p>
+        </Space>
+      )}
       {(csvValidationError.length > 0 || csvtransformError.length > 0) && (
         <Space
           direction="vertical"

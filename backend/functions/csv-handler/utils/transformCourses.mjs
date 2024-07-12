@@ -1,4 +1,4 @@
-export const transformCourses = (data) => {
+const transformCourses = (data) => {
   const courseData = data.map((row) => {
     return {
       course_type: row.course_type,
@@ -58,3 +58,5 @@ export const transformCourses = (data) => {
   console.log("courseData", courseData);
   return courseData;
 };
+
+export default transformCourses;

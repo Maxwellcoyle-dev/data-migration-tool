@@ -1,4 +1,4 @@
-export const transformCatalogs = (data) => {
+const transformCatalogs = (data) => {
   const catalogData = data.map((row) => {
     return {
       code: row.code,
@@ -9,3 +9,5 @@ export const transformCatalogs = (data) => {
   console.log("catalogData", catalogData);
   return catalogData;
 };
+
+export default transformCatalogs;

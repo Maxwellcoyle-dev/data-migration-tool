@@ -1,5 +1,5 @@
 {
-  "name": "create-courses",
+  "name": "chunk-handler",
   "version": "1.0.0",
   "description": "",
   "main": "app.mjs",
@@ -10,9 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.609.0",
-    "axios": "^1.7.2",
-    "busboy": "^1.6.0",
-    "csv-parser": "^3.0.0",
-    "stream": "^0.0.3"
+    "@aws-sdk/client-s3": "^3.614.0",
+    "@aws-sdk/client-sqs": "^3.614.0",
+    "axios": "^1.7.2"
   }
 }

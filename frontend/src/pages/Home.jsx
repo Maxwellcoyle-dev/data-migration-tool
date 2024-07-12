@@ -106,10 +106,9 @@ const Home = ({ currentPlatformInfo, user }) => {
     formData.append("options", JSON.stringify(cleanedOptions));
     formData.append("userId", user.userId);
     formData.append("domain", currentPlatformInfo.domain);
+    formData.append("importType", importType);
 
-    console.log("importTYpe", importType);
-
-    mutate({ formData, importType });
+    mutate({ formData });
 
     setCsvData([]);
   };
@@ -174,9 +173,9 @@ const Home = ({ currentPlatformInfo, user }) => {
         importOptions={importOptions}
         handleOptionChange={handleOptionChange}
       />
-      {uploadCSVResponseData && (
+      {/* {uploadCSVResponseData && (
         <DataImportResults results={uploadCSVResponseData} />
-      )}
+      )} */}
     </div>
   );
 };
