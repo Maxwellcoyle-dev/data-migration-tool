@@ -1,12 +1,15 @@
 const branchResponseMap = (response, data) => {
-  console.log("Mapping course response");
+  console.log("Mapping branch response");
   // Create a map of code to catalog items
 
-  const responseData = response.data.map((item) => {
+  console.log("data", data);
+  console.log("response", response.data);
+
+  const responseData = response.data.map((item, index) => {
     return {
-      row_index: item.row_index,
-      course_name: data[item.row_index].course_name,
-      course_id: item.course_id,
+      row_index: index + 1,
+      branch_name: data[index].translations.english,
+      branch_code: data[index].code,
       success: item.success,
       message: item.message,
     };

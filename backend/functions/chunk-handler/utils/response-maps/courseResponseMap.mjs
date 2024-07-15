@@ -2,11 +2,10 @@ const courseResponseMap = (response, data) => {
   console.log("Mapping course response");
   // Create a map of code to catalog items
 
-  const responseData = response.data.map((item) => {
+  const responseData = response.data.map((item, index) => {
     return {
-      row_index: item.row_index,
-      course_name: data[item.row_index].course_name,
-      course_id: item.course_id,
+      row_index: index + 1,
+      course_name: data[index].course_name,
       success: item.success,
       message: item.message,
     };

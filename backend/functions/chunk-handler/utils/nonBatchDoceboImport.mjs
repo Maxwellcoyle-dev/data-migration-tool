@@ -1,8 +1,25 @@
 import axios from "axios";
 
-export const createGroups = async (url, headers, data) => {
+import importTypes from "./importTypes.mjs";
+
+const nonBatchDoceboImport = async (
+  domain,
+  importType,
+  accessToken,
+  data,
+  importOptions
+) => {
   console.log("Create groups initiated");
   let responseData = [];
+
+  const endpoint = importTypes[importType].endpoint;
+  console.log("Endpoint:", endpoint);
+  const url = `https://${domain}${endpoint}`;
+  console.log("URL:", url);
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+  };
 
   for (let i = 0; i < data.length; i++) {
     try {
@@ -34,3 +51,5 @@ export const createGroups = async (url, headers, data) => {
   console.log("Docebo API responses:", responseData);
   return responseData;
 };
+
+export default nonBatchDoceboImport;

@@ -1,5 +1,5 @@
-export const transformEnrollments = (data) => {
-  const enrollmentData = data.map((row) => {
+const transformEnrollments = (data) => {
+  const transformedData = data.map((row) => {
     return {
       ...(row.user_id && { user_id: row.user_id }),
       ...(row.username && { username: row.username }),
@@ -29,6 +29,8 @@ export const transformEnrollments = (data) => {
     };
   });
 
-  console.log("enrollmentData", enrollmentData);
-  return enrollmentData;
+  console.log("enrollmentData", transformedData);
+  return { transformedData, batchCount: 300 };
 };
+
+export default transformEnrollments;

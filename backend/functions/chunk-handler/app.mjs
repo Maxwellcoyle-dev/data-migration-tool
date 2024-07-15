@@ -5,7 +5,8 @@
 // update dynamoDB Item with status, s3 metadata
 
 import { getAccessToken } from "./utils/getAccessToken.mjs";
-import postToDocebo from "./utils/postToDocebo.mjs";
+import batchDoceboImport from "./utils/batchDoceboImport.mjs";
+import nonBatchDoceboImport from "./utils/nonBatchDoceboImport.mjs";
 import addLogsToS3 from "./utils/addLogsToS3.mjs";
 import updateLogTable from "./utils/updateLogTable.mjs";
 
@@ -39,13 +40,28 @@ export const handler = async (event) => {
 
   // get the access token
   const accessToken = await getAccessToken(userId, domain);
-  const doceboResponse = await postToDocebo(
-    domain,
-    importType,
-    accessToken,
-    chunk,
-    importOptions
-  );
+
+  let doceboResponse;
+
+  switch (importType) {
+    case "groups":
+      doceboResponse = await nonBatchDoceboImport(
+        domain,
+        importType,
+        accessToken,
+        chunk,
+        importOptions
+      );
+      break;
+    default:
+      doceboResponse = await batchDoceboImport(
+        domain,
+        importType,
+        accessToken,
+        chunk,
+        importOptions
+      );
+  }
 
   // store logs in S3
   await addLogsToS3(importId, chunkNumber, doceboResponse);

@@ -1,5 +1,5 @@
 const transformCourses = (data) => {
-  const courseData = data.map((row) => {
+  const transformedData = data.map((row) => {
     return {
       course_type: row.course_type,
       course_name: row.course_name,
@@ -55,8 +55,9 @@ const transformCourses = (data) => {
     };
   });
 
-  console.log("courseData", courseData);
-  return courseData;
+  console.log("courseData", transformedData);
+  const batchCount = 300;
+  return { transformedData, batchCount };
 };
 
 export default transformCourses;

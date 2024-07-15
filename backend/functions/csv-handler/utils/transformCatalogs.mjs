@@ -1,13 +1,14 @@
 const transformCatalogs = (data) => {
-  const catalogData = data.map((row) => {
+  const transformedData = data.map((row) => {
     return {
       code: row.code,
       name: row.name,
       ...(row.description && { description: row.description }),
     };
   });
-  console.log("catalogData", catalogData);
-  return catalogData;
+  console.log("catalogData", transformedData);
+  const batchCount = 300;
+  return { transformedData, batchCount };
 };
 
 export default transformCatalogs;

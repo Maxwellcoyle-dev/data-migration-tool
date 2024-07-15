@@ -2,7 +2,7 @@ import axios from "axios";
 
 import importTypes from "./importTypes.mjs";
 
-const postToDocebo = async (
+const batchDoceboImport = async (
   domain,
   importType,
   accessToken,
@@ -54,4 +54,4 @@ const postToDocebo = async (
   }
 };
 
-export default postToDocebo;
+export default batchDoceboImport;

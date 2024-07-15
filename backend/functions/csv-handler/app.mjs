@@ -5,12 +5,17 @@
 // 5. split data into chunks of 300 items - send each chunk to sqs queue - {chunk, importId, optionsData, userId, importType, domain}
 // 6. create a record with metadata in DoceboMigrationLogTable - {importId, userId, status, importType, domain, importDate}
 
+// import { csvHandlerEvent as event } from "../events.mjs";
+
 import { v4 as uuidv4 } from "uuid";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { processMultipartForm, csvToJson } from "./utils/multipartUtils.mjs";
 import transformCatalogs from "./utils/transformCatalogs.mjs";
 import transformCourses from "./utils/transformCourses.mjs";
+import transformGroups from "./utils/tranformGroups.mjs";
+import transformBranches from "./utils/transformBranches.mjs";
+import transformEnrollments from "./utils/transformEnrollments.mjs";
 
 const sqsClient = new SQSClient({ region: "us-east-2" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
@@ -35,20 +40,32 @@ export const handler = async (event) => {
   const jsonData = await csvToJson(fileData);
   console.log("jsonData", jsonData);
 
+  let importData;
+
   //   Transform JSON data based on importType
-  let transformedData;
   switch (importType) {
     case "catalogs":
-      transformedData = transformCatalogs(jsonData);
-      console.log("transformedData", transformedData);
+      importData = transformCatalogs(jsonData);
       break;
     case "courses":
-      transformedData = transformCourses(jsonData);
-      console.log("transformedData", transformedData);
+      importData = transformCourses(jsonData);
+      break;
+    case "groups":
+      importData = transformGroups(jsonData);
+      break;
+    case "branches":
+      importData = transformBranches(jsonData);
+      break;
+    case "enrollments":
+      importData = transformEnrollments(jsonData);
       break;
     default:
       throw new Error("Invalid import type");
   }
+
+  const { transformedData, batchCount } = importData;
+  console.log("batchCount", batchCount);
+  console.log("transformedData", transformedData);
 
   const importId = uuidv4();
 
@@ -64,7 +81,7 @@ export const handler = async (event) => {
   console.log("importMetadata", importMetadata);
 
   // Split data into chunks of 300 items or less
-  const maxChunkSize = 300;
+  const maxChunkSize = batchCount;
   const chunks = [];
   for (let i = 0; i < transformedData.length; i += maxChunkSize) {
     chunks.push(transformedData.slice(i, i + maxChunkSize));
