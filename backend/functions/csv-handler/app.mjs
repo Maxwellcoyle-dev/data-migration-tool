@@ -83,6 +83,8 @@ export const handler = async (event) => {
   // Split data into chunks of 300 items or less
   const maxChunkSize = batchCount;
   const chunks = [];
+  const chunkCount = Math.ceil(transformedData.length / maxChunkSize);
+  console.log("chunkCount", chunkCount);
   for (let i = 0; i < transformedData.length; i += maxChunkSize) {
     chunks.push(transformedData.slice(i, i + maxChunkSize));
   }
@@ -96,6 +98,7 @@ export const handler = async (event) => {
         QueueUrl: process.env.SQS_QUEUE_URL,
         MessageBody: JSON.stringify({
           chunk,
+          chunkCount,
           chunkNumber,
           importId,
           userId,
@@ -108,44 +111,27 @@ export const handler = async (event) => {
 
       await sqsClient.send(new SendMessageCommand(sqsParams));
     }
-  } catch (error) {
-    console.error("SQS error:", error);
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        importId: importMetadata.importId,
-        status: "failed",
-        message: "Error sending data to SQS",
-        error: error.message,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "OPTIONS,POST",
-        "Access-Control-Allow-Headers": "Content-Type",
+
+    // Create a record with metadata in DoceboMigrationLogTable
+    const dynamoParams = {
+      TableName: process.env.MIGRATION_LOG_TABLE,
+      Item: {
+        importId: { S: importId },
+        userId: { S: userId },
+        status: { S: "pending" },
+        importType: { S: importType },
+        chunkCount: { N: chunkCount.toString() },
+        s3ChunkMetadata: { L: [] },
+        importOptions: { S: JSON.stringify(importOptions) },
+        domain: { S: domain },
+        importDate: { S: importMetadata.importDate },
       },
     };
-  }
+    console.log("dynamoParams", dynamoParams);
 
-  // Create a record with metadata in DoceboMigrationLogTable
-  const dynamoParams = {
-    TableName: process.env.MIGRATION_LOG_TABLE,
-    Item: {
-      importId: { S: importId },
-      userId: { S: userId },
-      status: { S: "pending" },
-      importType: { S: importType },
-      importOptions: { S: JSON.stringify(importOptions) },
-      domain: { S: domain },
-      importDate: { S: importMetadata.importDate },
-    },
-  };
-  console.log("dynamoParams", dynamoParams);
-
-  try {
     await dynamoClient.send(new PutItemCommand(dynamoParams));
   } catch (error) {
-    console.error("DynamoDB error:", error);
+    console.error("error:", error);
     return {
       statusCode: 400,
       body: JSON.stringify({

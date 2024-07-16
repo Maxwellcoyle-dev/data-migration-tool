@@ -1,29 +1,63 @@
-import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  UpdateItemCommand,
+  GetItemCommand,
+} from "@aws-sdk/client-dynamodb";
 
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 
-const updateLogTable = async (importId, chunkNumber) => {
+const getLogTableItem = async (importId) => {
   const params = {
     TableName: process.env.MIGRATION_LOG_TABLE,
     Key: {
       importId: { S: importId },
     },
-    UpdateExpression: "SET #status = :status, #s3Metadata = :s3Metadata",
+  };
+
+  try {
+    const data = await dynamoClient.send(new GetItemCommand(params));
+    console.log("DynamoDB response:", data);
+    return data.Item;
+  } catch (err) {
+    console.error("DynamoDB error:", err);
+  }
+};
+
+const updateLogTable = async (importId, chunkNumber) => {
+  console.log("Updating log table with chunk metadata");
+
+  console.log("chunkNumber", chunkNumber);
+  const logTableItem = await getLogTableItem(importId);
+  console.log("logTableItem", logTableItem);
+  const chunkCount = parseInt(logTableItem.chunkCount.N);
+  console.log("chunkCount", chunkCount);
+
+  const status = chunkCount === chunkNumber ? "completed" : "in-progress";
+  console.log("status", status);
+
+  const params = {
+    TableName: process.env.MIGRATION_LOG_TABLE,
+    Key: {
+      importId: { S: importId },
+    },
+    UpdateExpression:
+      "SET #status = :status, #s3Metadata = list_append(if_not_exists(#s3Metadata, :emptyList), :newChunk)",
     ExpressionAttributeNames: {
       "#status": "status",
-      // s3ChunkMetadata is an array of chunk numbers and their corresponding S3 URLs
       "#s3Metadata": "s3ChunkMetadata",
     },
     ExpressionAttributeValues: {
-      ":status": { S: "in-progress" },
-      // add the new chunk number and S3 URL to the existing array
-      ":s3Metadata": {
+      ":status": {
+        S: status,
+      },
+      ":emptyList": { L: [] },
+      ":newChunk": {
         L: [
           {
             M: {
               chunk: { S: `chunk_${chunkNumber}` },
               url: {
-                S: `s3://${process.env.MIGRATION_LOG_S3_BUCKET}/${importId}/chunk_${chunkNumber}.json`,
+                S: `${importId}/chunk_${chunkNumber}.json`,
               },
             },
           },
@@ -31,6 +65,7 @@ const updateLogTable = async (importId, chunkNumber) => {
       },
     },
   };
+  console.log("params", params);
 
   try {
     const data = await dynamoClient.send(new UpdateItemCommand(params));

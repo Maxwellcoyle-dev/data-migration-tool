@@ -5,8 +5,6 @@ import { branches } from "./types/branches";
 import { groups } from "./types/groups";
 
 const types = (type) => {
-  console.log("type --- ", type);
-
   switch (type) {
     case "courses":
       return courses;

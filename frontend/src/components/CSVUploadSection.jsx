@@ -5,67 +5,71 @@ import { IoIosCheckmarkCircle, IoMdWarning } from "react-icons/io";
 import { MdOutlinePending } from "react-icons/md";
 
 const CSVUploadSection = ({
+  csvData,
+  setImportOptions,
+  setCsvData,
   handleUpload,
   setCsvValidationError,
   setCsvTransformError,
   importType,
-  isPending,
-  isError,
-  csvUploadError,
-  uploadCSVResponseData,
   csvReadyForImport,
   handleSubmit,
-  csvValidationError,
-  csvtransformError,
 }) => (
-  <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-    <div style={{ width: "50%" }}>
-      <CSVUploader
-        onUpload={handleUpload}
-        setCsvValidationError={setCsvValidationError}
-        setCsvTransformError={setCsvTransformError}
-        importType={importType}
-      />
-    </div>
-
-    <div style={{ width: "50%", display: "flex", justifyContent: "center" }}>
+  <div
+    style={{
+      width: "100%",
+      minHeight: "11rem",
+      display: "flex",
+    }}
+  >
+    {csvData.length === 0 ? (
+      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <CSVUploader
+          onUpload={handleUpload}
+          setCsvValidationError={setCsvValidationError}
+          setCsvTransformError={setCsvTransformError}
+          importType={importType}
+        />
+      </div>
+    ) : (
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           gap: "1rem",
           alignItems: "center",
+          width: "100%",
         }}
       >
-        {isPending && (
-          <div style={{ textAlign: "center" }}>
-            <Spin tip="Uploading..." />
-          </div>
-        )}
-        {isError && <Alert message={csvUploadError.message} type="error" />}
-        {uploadCSVResponseData?.data && (
-          <>
-            <p>
-              <strong>Successful Rows: </strong>
-              {/* {responseLogs.success.length} */}
-            </p>
-            <p>
-              <strong>Failed Rows: </strong>
-              {/* {responseLogs.errors.length} */}
-            </p>
-          </>
-        )}
         {csvReadyForImport && (
           <>
             <IoIosCheckmarkCircle style={{ color: "green", fontSize: 50 }} />
-            <h2>CSV ready for import</h2>
+            <h2 style={{ margin: 0 }}>CSV ready for import</h2>
             <Button type="primary" onClick={handleSubmit}>
               Import Data
+            </Button>
+            <Button
+              type="default"
+              onClick={() => {
+                setCsvData([]);
+                setImportOptions({});
+              }}
+            >
+              Cancel
             </Button>
           </>
         )}
       </div>
+    )}
 
+    {/* <div
+      style={{
+        width: "100%",
+        height: "10rem",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
       {uploadCSVResponseData?.status && (
         <Space
           direction="vertical"
@@ -94,7 +98,7 @@ const CSVUploadSection = ({
           )}
         </Space>
       )}
-    </div>
+    </div> */}
   </div>
 );
 

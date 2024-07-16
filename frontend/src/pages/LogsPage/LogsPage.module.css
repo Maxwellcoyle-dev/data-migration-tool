@@ -1,0 +1,20 @@
+.previewListContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.PreviewListItem {
+  display: flex;
+  flex-direction: row;
+  gap: 4rem;
+  width: 100%;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.PreviewListItem div p {
+  margin: 0;
+}

@@ -66,7 +66,7 @@ const CSVUploader = ({
   });
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <div {...getRootProps()} className="dropzone" style={styles.dropzone}>
         <input {...getInputProps()} />
         <p>Drag and drop a CSV file here, or</p>
@@ -80,6 +80,7 @@ const CSVUploader = ({
 
 const styles = {
   dropzone: {
+    width: "100%",
     border: "2px dashed #cccccc",
     borderRadius: "5px",
     padding: "20px",

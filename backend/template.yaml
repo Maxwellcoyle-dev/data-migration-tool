@@ -178,6 +178,59 @@ Resources:
           ACCESS_TOKEN_TABLE_NAME: AccessTokens
           MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
 
+  ListLogsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/list-logs/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        ListLogs:
+          Type: Api
+          Properties:
+            Path: /list-logs
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DoceboMigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+      Environment:
+        Variables:
+          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+
+  GetLogFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/get-log/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        GetLog:
+          Type: Api
+          Properties:
+            Path: /get-log
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DoceboMigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+      Environment:
+        Variables:
+          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
+
 Outputs:
   AccessTokensTable:
     Description: "DynamoDB Table for Access Tokens"
@@ -194,6 +247,14 @@ Outputs:
   PostCSVUrl:
     Description: "API Gateway endpoint URL for the main handler function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/post-csv"
+
+  ListLogsUrl:
+    Description: "API Gateway endpoint URL for the List Logs function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/list-logs"
+
+  GetLogUrl:
+    Description: "API Gateway endpoint URL for the Get Log function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/get-log"
 
   DoceboMigrationLogTable:
     Description: "DynamoDB Table for Docebo Migration Logs"
@@ -214,3 +275,11 @@ Outputs:
   ChunkHandlerFunction:
     Description: "Auxiliary Chunk Handler Lambda Function ARN"
     Value: !GetAtt ChunkHandlerFunction.Arn
+
+  ListLogsFunction:
+    Description: "List Logs Lambda Function ARN"
+    Value: !GetAtt ListLogsFunction.Arn
+
+  GetLogFunction:
+    Description: "Get Log Lambda Function ARN"
+    Value: !GetAtt GetLogFunction.Arn
