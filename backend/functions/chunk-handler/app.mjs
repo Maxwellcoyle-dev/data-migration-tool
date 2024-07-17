@@ -63,11 +63,30 @@ export const handler = async (event) => {
       );
   }
 
+  if (doceboResponse.success === false) {
+    // update DynamoDB item
+    await updateLogTable(importId, chunkNumber, doceboResponse);
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        importId,
+        status: "failed",
+        message: doceboResponse.statusMessage,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    };
+  }
+
   // store logs in S3
   await addLogsToS3(importId, chunkNumber, doceboResponse);
 
-  // update DynamoDB item
-  await updateLogTable(importId, chunkNumber);
+  await updateLogTable(importId, chunkNumber, doceboResponse);
 
   return {
     statusCode: 200,

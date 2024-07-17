@@ -38,6 +38,7 @@ export const handler = async (event) => {
         userId: item.userId.S,
         importType: item.importType.S,
         status: item.status.S,
+        statusMessage: item.statusMessage.S,
         importDate: item.importDate.S,
         domain: item.domain.S,
         s3Metadata: item.s3ChunkMetadata?.L.map((chunk) => {

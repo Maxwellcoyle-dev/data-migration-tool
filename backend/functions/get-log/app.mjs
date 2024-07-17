@@ -43,6 +43,26 @@ export const handler = async (event) => {
 
   const logItem = getItemResponse.Item;
 
+  if (!logItem) {
+    return {
+      statusCode: 404,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ message: "Log item not found" }),
+    };
+  }
+
+  if (logItem.status.S === "failed") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ logItem }),
+    };
+  }
+
   const logItemMetadata = logItem.s3ChunkMetadata.L.map((chunk) => {
     return {
       chunk: chunk.M.chunk.S,

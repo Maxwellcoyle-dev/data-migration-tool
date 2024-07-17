@@ -119,6 +119,7 @@ export const handler = async (event) => {
         importId: { S: importId },
         userId: { S: userId },
         status: { S: "pending" },
+        statusMessage: { S: "Chunks sent to handler." },
         importType: { S: importType },
         chunkCount: { N: chunkCount.toString() },
         s3ChunkMetadata: { L: [] },

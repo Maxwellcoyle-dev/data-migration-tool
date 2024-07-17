@@ -1,100 +1,45 @@
-import React, { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import Papa from "papaparse";
-import { validateData } from "../utilities/validations";
-import { transformData } from "../utilities/tranformations";
+import React from "react";
+import { Button } from "antd";
+import { IoIosCheckmarkCircle, IoMdWarning } from "react-icons/io";
 
 const CSVUploader = ({
-  onUpload,
-  setCsvValidationError,
-  setCsvTransformError,
-  importType,
+  csvReadyForImport,
+  handleSubmit,
+  setCsvData,
+  setImportOptions,
+  setView,
 }) => {
-  const onDrop = useCallback(
-    (acceptedFiles) => {
-      const file = acceptedFiles[0];
-      let rowCount = 0;
-      let previewData = [];
-      let allHeaders = null;
-
-      Papa.parse(file, {
-        step: (results, parser) => {
-          if (rowCount === 0) {
-            // Store the headers
-            allHeaders = results.meta.fields;
-          }
-          if (rowCount < 3) {
-            previewData.push(results.data);
-          }
-          rowCount++;
-          if (rowCount === 3) {
-            parser.abort(); // abort parsing after the first 3 rows
-          }
-        },
-        complete: () => {
-          // Validate the data using headers only
-          const validationErrors = validateData([allHeaders], importType);
-          if (validationErrors.length > 0) {
-            setCsvValidationError(validationErrors.join("; "));
-          } else {
-            try {
-              // Transform only the first 3 rows for preview
-              const transformedPreviewData = transformData(
-                previewData,
-                importType
-              );
-              // Set the preview data and pass the file for later use
-              onUpload(transformedPreviewData, file);
-            } catch (error) {
-              setCsvTransformError("Error transforming CSV data");
-            }
-          }
-        },
-        header: true,
-      });
-    },
-    [onUpload, importType, setCsvValidationError, setCsvTransformError]
-  );
-
-  const { getRootProps, getInputProps, open } = useDropzone({
-    onDrop,
-    accept: {
-      "text/csv": [".csv"],
-    },
-    noClick: true,
-    noKeyboard: true,
-  });
-
   return (
-    <div style={{ width: "100%" }}>
-      <div {...getRootProps()} className="dropzone" style={styles.dropzone}>
-        <input {...getInputProps()} />
-        <p>Drag and drop a CSV file here, or</p>
-        <button type="button" onClick={open} style={styles.button}>
-          Browse Files
-        </button>
-      </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "1rem",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      {csvReadyForImport && (
+        <>
+          <IoIosCheckmarkCircle style={{ color: "green", fontSize: 50 }} />
+          <h2 style={{ margin: 0 }}>CSV ready for import</h2>
+          <Button type="primary" onClick={handleSubmit}>
+            Import Data
+          </Button>
+          <Button
+            type="default"
+            onClick={() => {
+              setCsvData([]);
+              setImportOptions({});
+              setView("dropbox");
+            }}
+          >
+            Cancel
+          </Button>
+        </>
+      )}
     </div>
   );
-};
-
-const styles = {
-  dropzone: {
-    width: "100%",
-    border: "2px dashed #cccccc",
-    borderRadius: "5px",
-    padding: "20px",
-    textAlign: "center",
-  },
-  button: {
-    marginTop: "10px",
-    padding: "10px 20px",
-    backgroundColor: "#007bff",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
 };
 
 export default CSVUploader;

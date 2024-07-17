@@ -23,7 +23,7 @@ const getLogTableItem = async (importId) => {
   }
 };
 
-const updateLogTable = async (importId, chunkNumber) => {
+const updateLogTable = async (importId, chunkNumber, doceboResponse) => {
   console.log("Updating log table with chunk metadata");
 
   console.log("chunkNumber", chunkNumber);
@@ -32,7 +32,15 @@ const updateLogTable = async (importId, chunkNumber) => {
   const chunkCount = parseInt(logTableItem.chunkCount.N);
   console.log("chunkCount", chunkCount);
 
-  const status = chunkCount === chunkNumber ? "completed" : "in-progress";
+  let status;
+  if (doceboResponse.success) {
+    status = chunkCount === chunkNumber ? "completed" : "in-progress";
+  }
+
+  if (!doceboResponse.success) {
+    status = "failed";
+  }
+
   console.log("status", status);
 
   const params = {
@@ -41,14 +49,18 @@ const updateLogTable = async (importId, chunkNumber) => {
       importId: { S: importId },
     },
     UpdateExpression:
-      "SET #status = :status, #s3Metadata = list_append(if_not_exists(#s3Metadata, :emptyList), :newChunk)",
+      "SET #status = :status, #statusMessage = :statusMessage, #s3Metadata = list_append(if_not_exists(#s3Metadata, :emptyList), :newChunk)",
     ExpressionAttributeNames: {
       "#status": "status",
+      "#statusMessage": "statusMessage",
       "#s3Metadata": "s3ChunkMetadata",
     },
     ExpressionAttributeValues: {
       ":status": {
         S: status,
+      },
+      ":statusMessage": {
+        S: doceboResponse.statusMessage,
       },
       ":emptyList": { L: [] },
       ":newChunk": {

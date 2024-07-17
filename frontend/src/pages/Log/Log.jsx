@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Table, Tag, Button, Input, Descriptions, Collapse } from "antd";
+import {
+  Table,
+  Tag,
+  Button,
+  Input,
+  Descriptions,
+  Collapse,
+  Spin,
+  Alert,
+} from "antd";
 import {
   DownloadOutlined,
   SearchOutlined,
@@ -23,19 +32,12 @@ const Log = () => {
 
   useEffect(() => {
     console.log("logData", logData);
-    setFilteredData(logData?.logContent);
+    setFilteredData(
+      Array.isArray(logData?.logContent?.data) ? logData.logContent.data : []
+    );
   }, [logData]);
 
-  const metadata = {
-    importType: { S: "branches" },
-    status: { S: "completed" },
-    chunkCount: { N: "1" },
-    importDate: { S: "2024-07-16T16:40:42.535Z" },
-    importOptions: { S: '{"update":false}' },
-    domain: { S: "traintopia.docebosaas.com" },
-  };
-
-  const keys = Object.keys(logData?.logContent[0] || {});
+  const keys = Object.keys(logData?.logContent?.data?.[0] || {});
 
   const columns = keys.map((key) => {
     if (key === "success") {
@@ -107,7 +109,7 @@ const Log = () => {
   });
 
   const handleTableChange = (pagination, filters, sorter) => {
-    let filtered = [...logData?.logContent];
+    let filtered = [...(logData?.logContent.data || [])];
 
     if (filters.success) {
       filtered = filtered.filter((item) =>
@@ -139,7 +141,7 @@ const Log = () => {
   const resetFiltersAndSorting = () => {
     setTableFilters({});
     setTableSorter({});
-    setFilteredData(logData?.logContent);
+    setFilteredData(logData?.logContent.data || []);
   };
 
   const downloadCSV = () => {
@@ -182,6 +184,45 @@ const Log = () => {
     }).format(new Date(date));
   };
 
+  if (logIsLoading) {
+    return (
+      <div className={styles.logTableContainer}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <Spin tip="Loading..." />
+        </div>
+      </div>
+    );
+  }
+
+  if (logIsError) {
+    return (
+      <div className={styles.logTableContainer}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <Alert
+            message="Error"
+            description="Failed to load log data."
+            type="error"
+            showIcon
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.logTableContainer}>
       <div
@@ -210,22 +251,25 @@ const Log = () => {
         <Panel header="Import Metadata" key="1">
           <Descriptions title="Import Metadata" bordered column={1}>
             <Descriptions.Item label="Import Type">
-              {metadata?.importType.S}
+              {logData?.logItem?.importType.S}
             </Descriptions.Item>
             <Descriptions.Item label="Status">
-              {metadata?.status?.S}
+              {logData?.logItem?.status?.S}
+            </Descriptions.Item>
+            <Descriptions.Item label="Status Message">
+              {logData?.logItem?.statusMessage?.S}
             </Descriptions.Item>
             <Descriptions.Item label="Chunk Count">
-              {metadata?.chunkCount?.N}
+              {logData?.logItem?.chunkCount?.N}
             </Descriptions.Item>
             <Descriptions.Item label="Import Date">
-              {formatDate(metadata?.importDate?.S)}
+              {formatDate(logData?.logItem?.importDate?.S)}
             </Descriptions.Item>
             <Descriptions.Item label="Domain">
-              {metadata?.domain?.S}
+              {logData?.logItem?.domain?.S}
             </Descriptions.Item>
             <Descriptions.Item label="Import Options">
-              {metadata?.importOptions?.S}
+              {logData?.logItem?.importOptions?.S}
             </Descriptions.Item>
           </Descriptions>
         </Panel>
@@ -233,7 +277,7 @@ const Log = () => {
 
       <Table
         columns={columns}
-        dataSource={logData?.logContent}
+        dataSource={filteredData}
         rowKey="row_index"
         onChange={handleTableChange}
       />

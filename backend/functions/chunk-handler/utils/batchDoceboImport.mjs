@@ -36,15 +36,19 @@ const batchDoceboImport = async (
       data
     );
     console.log("Mapped response:", mappedResponse);
-    return mappedResponse;
+    const successResponse = {
+      success: true,
+      statusMessage: "Docebo data import completed",
+      data: mappedResponse,
+    };
+    return successResponse;
   } catch (error) {
     console.error("Docebo API error:", error);
     // Check if the error has response data
     if (error.response) {
       const errorResponse = {
         success: false,
-        data: error.response.data,
-        status: error.response.status,
+        statusMessage: `${error.response.data.status} - ${error.response.data.name} - ${error.response.data.message}`,
       };
       console.log("Error response:", errorResponse);
       return errorResponse;
