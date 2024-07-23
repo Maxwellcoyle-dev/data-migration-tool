@@ -1,6 +1,8 @@
 import React from "react";
-import { useTable } from "react-table";
+import { Table, Typography, Empty } from "antd";
 import OptionsTable from "./OptionsTable";
+
+const { Title } = Typography;
 
 const CSVPreview = ({
   csvData,
@@ -11,9 +13,9 @@ const CSVPreview = ({
   const columns = React.useMemo(
     () =>
       Object.keys(csvData[0] || {}).map((key) => ({
-        Header: key,
-        accessor: key,
-        Cell: ({ value }) => {
+        title: key,
+        dataIndex: key,
+        render: (value) => {
           if (typeof value === "object" && value !== null) {
             return JSON.stringify(value);
           }
@@ -26,87 +28,28 @@ const CSVPreview = ({
     [csvData]
   );
 
-  const data = React.useMemo(() => csvData.slice(0, 2), [csvData]);
-
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({
-      columns,
-      data,
-    });
-
-  if (csvData.length === 0) {
-    return null;
-  }
+  const data = React.useMemo(
+    () => csvData.slice(0, 2).map((item, index) => ({ ...item, key: index })),
+    [csvData]
+  );
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif" }}>
-      <h4>CSV Preview</h4>
+      <Title level={3}>CSV Preview</Title>
       <div style={{ overflowX: "scroll", width: "100%" }}>
-        <table
-          {...getTableProps()}
-          style={{
-            width: "100%",
-            maxWidth: "100%",
-            borderCollapse: "collapse",
-            marginBottom: "1em",
-          }}
-        >
-          <thead style={{ backgroundColor: "#f2f2f2" }}>
-            {headerGroups.map((headerGroup) => {
-              const { key, ...restHeaderGroupProps } =
-                headerGroup.getHeaderGroupProps();
-              return (
-                <tr key={key} {...restHeaderGroupProps}>
-                  {headerGroup.headers.map((column) => {
-                    const { key: columnKey, ...restColumnProps } =
-                      column.getHeaderProps();
-                    return (
-                      <th
-                        key={columnKey}
-                        {...restColumnProps}
-                        style={{
-                          borderBottom: "1px solid #ddd",
-                          padding: "0.5em",
-                          textAlign: "left",
-                          minWidth: "fit-content",
-                        }}
-                      >
-                        {column.render("Header")}
-                      </th>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              const { key, ...restRowProps } = row.getRowProps();
-              return (
-                <tr
-                  key={key}
-                  {...restRowProps}
-                  style={{ borderBottom: "1px solid #ddd" }}
-                >
-                  {row.cells.map((cell) => {
-                    const { key: cellKey, ...restCellProps } =
-                      cell.getCellProps();
-                    return (
-                      <td
-                        key={cellKey}
-                        {...restCellProps}
-                        style={{ padding: "0.5em" }}
-                      >
-                        {cell.render("Cell")}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {csvData.length === 0 ? (
+          <Empty
+            description="No data to preview"
+            style={{ minHeight: "15rem" }}
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data}
+            pagination={false}
+            style={{ marginBottom: "1em" }}
+          />
+        )}
       </div>
 
       <OptionsTable

@@ -6,7 +6,7 @@ export const processMultipartForm = (event) => {
   return new Promise((resolve, reject) => {
     const busboy = Busboy({ headers: event.headers });
     let fileData = [];
-    let optionsData = "";
+    let importOptions = "";
     let importType = "";
     let userId = "";
     let domain = "";
@@ -22,7 +22,7 @@ export const processMultipartForm = (event) => {
 
     busboy.on("field", (fieldname, val) => {
       if (fieldname === "options") {
-        optionsData = JSON.parse(val);
+        importOptions = JSON.parse(val);
       } else if (fieldname === "importType") {
         importType = val;
       } else if (fieldname === "userId") {
@@ -37,7 +37,7 @@ export const processMultipartForm = (event) => {
         const buffer = Buffer.concat(fileData);
         resolve({
           fileData: buffer.toString(),
-          optionsData,
+          importOptions,
           importType,
           userId,
           domain,
