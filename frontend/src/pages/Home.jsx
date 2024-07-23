@@ -3,9 +3,10 @@ import Header from "../components/Header.jsx";
 import FieldRenderer from "../components/FieldRenderer";
 import CSVUploadSection from "../components/CSVUploadSection";
 import CSVPreviewSection from "../components/CSVPreviewSection";
-import DataImportResults from "../components/DataImportResults.jsx";
+import LogListPreview from "../components/LogListPreview/LogListPreview.jsx";
 import useProcessResponse from "../hooks/useProcessResponse.js";
 import usePostCSV from "../hooks/usePostCSV.js";
+
 import types from "../utilities/types.js";
 
 const Home = ({ currentPlatformInfo, user }) => {
@@ -58,7 +59,6 @@ const Home = ({ currentPlatformInfo, user }) => {
     setCsvFile(file);
     setCsvTransformError("");
     setCsvValidationError("");
-
     reset();
   };
 
@@ -97,8 +97,6 @@ const Home = ({ currentPlatformInfo, user }) => {
   };
 
   const handleSubmit = () => {
-    console.log("Submitting data...");
-
     const cleanedOptions = cleanOptions(importOptions);
 
     const formData = new FormData();
@@ -106,10 +104,9 @@ const Home = ({ currentPlatformInfo, user }) => {
     formData.append("options", JSON.stringify(cleanedOptions));
     formData.append("userId", user.userId);
     formData.append("domain", currentPlatformInfo.domain);
+    formData.append("importType", importType);
 
-    console.log("importTYpe", importType);
-
-    mutate({ formData, importType });
+    mutate({ formData });
 
     setCsvData([]);
   };
@@ -154,6 +151,9 @@ const Home = ({ currentPlatformInfo, user }) => {
         typeFields={typeFields}
       />
       <CSVUploadSection
+        csvData={csvData}
+        setImportOptions={setImportOptions}
+        setCsvData={setCsvData}
         handleUpload={handleUpload}
         setCsvValidationError={setCsvValidationError}
         setCsvTransformError={setCsvTransformError}
@@ -174,9 +174,7 @@ const Home = ({ currentPlatformInfo, user }) => {
         importOptions={importOptions}
         handleOptionChange={handleOptionChange}
       />
-      {uploadCSVResponseData && (
-        <DataImportResults results={uploadCSVResponseData} />
-      )}
+      <LogListPreview />
     </div>
   );
 };

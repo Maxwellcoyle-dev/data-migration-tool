@@ -1,87 +1,70 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Space, Alert, Spin } from "antd";
-import CSVUploader from "../components/CSVUploader.jsx";
 import { IoIosCheckmarkCircle, IoMdWarning } from "react-icons/io";
+import { MdOutlinePending } from "react-icons/md";
+
+// Components
+import CSVDropbox from "./CSVDropbox.jsx";
+import CSVUploader from "./CSVUploader.jsx";
 
 const CSVUploadSection = ({
+  csvData,
+  setImportOptions,
+  setCsvData,
   handleUpload,
   setCsvValidationError,
+  csvValidationError,
   setCsvTransformError,
   importType,
-  isPending,
-  isError,
-  csvUploadError,
-  uploadCSVResponseData,
   csvReadyForImport,
   handleSubmit,
-  csvValidationError,
-  csvtransformError,
-}) => (
-  <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-    <div style={{ width: "50%" }}>
-      <CSVUploader
-        onUpload={handleUpload}
-        setCsvValidationError={setCsvValidationError}
-        setCsvTransformError={setCsvTransformError}
-        importType={importType}
-      />
-    </div>
+}) => {
+  const [view, setView] = useState("dropbox");
 
-    <div style={{ width: "50%" }}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          alignItems: "center",
-        }}
-      >
-        {isPending && (
-          <div style={{ textAlign: "center" }}>
-            <Spin tip="Uploading..." />
-          </div>
-        )}
-        {isError && <Alert message={csvUploadError.message} type="error" />}
-        {uploadCSVResponseData?.data && (
-          <>
-            <p>
-              <strong>Successful Rows: </strong>
-              {/* {responseLogs.success.length} */}
-            </p>
-            <p>
-              <strong>Failed Rows: </strong>
-              {/* {responseLogs.errors.length} */}
-            </p>
-          </>
-        )}
-        {csvReadyForImport && (
-          <>
-            <IoIosCheckmarkCircle style={{ color: "green", fontSize: 50 }} />
-            <h2>CSV ready for import</h2>
-            <Button type="primary" onClick={handleSubmit}>
-              Import Data
-            </Button>
-          </>
-        )}
-      </div>
+  useEffect(() => {
+    console.log("csvReadyForImport", csvReadyForImport);
+    console.log("csvData", csvData);
+    if (csvReadyForImport) {
+      setView("uploader");
+    }
+  }, [csvReadyForImport]);
 
-      {(csvValidationError.length > 0 || csvtransformError.length > 0) && (
-        <Space
-          direction="vertical"
-          style={{ textAlign: "center", marginTop: 16 }}
-        >
-          <IoMdWarning style={{ color: "red", fontSize: 50 }} />
-          <h2>There's a problem with your csv</h2>
-          {csvValidationError.length > 0 && (
-            <p>Validation Error: {csvValidationError}</p>
-          )}
-          {csvtransformError.length > 0 && (
-            <p>Transform Error: {csvtransformError}</p>
-          )}
-        </Space>
+  const handleResetDropbox = () => {
+    setCsvData([]);
+    setImportOptions({});
+    setCsvValidationError("");
+    setCsvTransformError("");
+    setView("dropbox");
+  };
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        minHeight: "11rem",
+        display: "flex",
+      }}
+    >
+      {view === "dropbox" ? (
+        <CSVDropbox
+          onUpload={handleUpload}
+          setCsvValidationError={setCsvValidationError}
+          csvValidationError={csvValidationError}
+          setCsvTransformError={setCsvTransformError}
+          importType={importType}
+          handleResetDropbox={handleResetDropbox}
+        />
+      ) : (
+        <CSVUploader
+          csvReadyForImport={csvReadyForImport}
+          handleSubmit={handleSubmit}
+          setCsvData={setCsvData}
+          setImportOptions={setImportOptions}
+          setView={setView}
+        />
       )}
     </div>
-  </div>
-);
+  );
+};
 
 export default CSVUploadSection;

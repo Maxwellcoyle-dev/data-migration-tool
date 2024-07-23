@@ -6,13 +6,12 @@ Description: >
   Sample SAM Template for data-migration-tool-backend
 
 Globals:
-  Function:
-    Timeout: 30
   Api:
     BinaryMediaTypes:
       - "multipart/form-data"
       - "application/json"
 
+# OAuth 2.0 / Authentication Resources
 Resources:
   AccessTokensTable:
     Type: AWS::DynamoDB::Table
@@ -60,107 +59,6 @@ Resources:
           CALLBACK_URI: https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback
           FRONTEND_URL: http://localhost:3000/callback?access_token=
 
-  CreateGroupsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/create-groups/
-      Handler: app.handler
-      Runtime: nodejs20.x
-      Architectures:
-        - x86_64
-      Events:
-        CreateGroups:
-          Type: Api
-          Properties:
-            Path: /create-groups
-            Method: POST
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref AccessTokensTable
-      Environment:
-        Variables:
-          ACCESS_TOKEN_TABLE_NAME: AccessTokens
-  CreateCoursesFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/create-courses/
-      Handler: app.handler
-      Runtime: nodejs20.x
-      Architectures:
-        - x86_64
-      Events:
-        CreateCourses:
-          Type: Api
-          Properties:
-            Path: /create-courses
-            Method: POST
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref AccessTokensTable
-      Environment:
-        Variables:
-          ACCESS_TOKEN_TABLE_NAME: AccessTokens
-  CreateBranchesFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/create-branches/
-      Handler: app.handler
-      Runtime: nodejs20.x
-      Architectures:
-        - x86_64
-      Events:
-        CreateBranches:
-          Type: Api
-          Properties:
-            Path: /create-branches
-            Method: POST
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref AccessTokensTable
-      Environment:
-        Variables:
-          ACCESS_TOKEN_TABLE_NAME: AccessTokens
-  CreateCatalogsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/create-catalogs/
-      Handler: app.handler
-      Runtime: nodejs20.x
-      Architectures:
-        - x86_64
-      Events:
-        CreateCatalogs:
-          Type: Api
-          Properties:
-            Path: /create-catalogs
-            Method: POST
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref AccessTokensTable
-      Environment:
-        Variables:
-          ACCESS_TOKEN_TABLE_NAME: AccessTokens
-  CreateEnrollmentsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/create-enrollments/
-      Handler: app.handler
-      Runtime: nodejs20.x
-      Architectures:
-        - x86_64
-      Events:
-        CreateEnrollments:
-          Type: Api
-          Properties:
-            Path: /create-enrollments
-            Method: POST
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref AccessTokensTable
-      Environment:
-        Variables:
-          ACCESS_TOKEN_TABLE_NAME: AccessTokens
-
   ScanAccessTokenTableFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -179,35 +77,209 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref AccessTokensTable
 
+  # -----
+
+  # Data Migration Resources
+  DoceboMigrationLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: DoceboMigrationLogTable
+      AttributeDefinitions:
+        - AttributeName: importId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: importId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: userId-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  DoceboMigrationLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: docebo-migration-log-bucket
+
+  DoceboDataMigrationQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: DoceboDataMigrationQueue
+
+  CSVHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/csv-handler/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        PostCsv:
+          Type: Api
+          Properties:
+            Path: /post-csv
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DoceboMigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt DoceboDataMigrationQueue.Arn
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref DoceboDataMigrationQueue
+          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
+
+  ChunkHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/chunk-handler/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DoceboDataMigrationQueue.Arn
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AccessTokensTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DoceboMigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+        - Statement:
+            Effect: Allow
+            Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+            Resource: !GetAtt DoceboDataMigrationQueue.Arn
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref DoceboDataMigrationQueue
+          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+          MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
+
+  ListLogsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/list-logs/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        ListLogs:
+          Type: Api
+          Properties:
+            Path: /list-logs
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DoceboMigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+      Environment:
+        Variables:
+          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+
+  GetLogFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/get-log/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        GetLog:
+          Type: Api
+          Properties:
+            Path: /get-log
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DoceboMigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+      Environment:
+        Variables:
+          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
+
 Outputs:
-  AuthCallbackFunction:
-    Description: "Auth Callback Function ARN"
-    Value: !GetAtt AuthCallbackFunction.Arn
-
-  CreateGroupsFunction:
-    Description: "Create Groups Function ARN"
-    Value: !GetAtt CreateGroupsFunction.Arn
-
-  CreateCoursesFunction:
-    Description: "Create Courses Function ARN"
-    Value: !GetAtt CreateCoursesFunction.Arn
-
-  CreateBranchesFunction:
-    Description: "Create Branches Function ARN"
-    Value: !GetAtt CreateBranchesFunction.Arn
-
-  CreateCatalogsFunction:
-    Description: "Create Catalogs Function ARN"
-    Value: !GetAtt CreateCatalogsFunction.Arn
-
-  CreateEnrollmentsFunction:
-    Description: "Create Enrollments Function ARN"
-    Value: !GetAtt CreateEnrollmentsFunction.Arn
-
-  ScanAccessTokenTableFunction:
-    Description: "Scan Access Token Table Function ARN"
-    Value: !GetAtt ScanAccessTokenTableFunction.Arn
-
   AccessTokensTable:
     Description: "DynamoDB Table for Access Tokens"
     Value: !Ref AccessTokensTable
+
+  AuthCallbackUrl:
+    Description: "API Gateway endpoint URL for the Auth Callback function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/callback"
+
+  ScanAccessTokenTableUrl:
+    Description: "API Gateway endpoint URL for the Scan Access Token Table function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/scan-table"
+
+  PostCSVUrl:
+    Description: "API Gateway endpoint URL for the main handler function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/post-csv"
+
+  ListLogsUrl:
+    Description: "API Gateway endpoint URL for the List Logs function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/list-logs"
+
+  GetLogUrl:
+    Description: "API Gateway endpoint URL for the Get Log function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/get-log"
+
+  DoceboMigrationLogTable:
+    Description: "DynamoDB Table for Docebo Migration Logs"
+    Value: !Ref DoceboMigrationLogTable
+
+  DoceboMigrationLogBucket:
+    Description: "S3 Bucket for Docebo Migration Logs"
+    Value: !Ref DoceboMigrationLogBucket
+
+  DoceboDataMigrationQueue:
+    Description: "SQS Queue for Docebo Data Migration"
+    Value: !Ref DoceboDataMigrationQueue
+
+  CSVHandlerFunction:
+    Description: "Main CSV Handler Lambda Function ARN"
+    Value: !GetAtt CSVHandlerFunction.Arn
+
+  ChunkHandlerFunction:
+    Description: "Auxiliary Chunk Handler Lambda Function ARN"
+    Value: !GetAtt ChunkHandlerFunction.Arn
+
+  ListLogsFunction:
+    Description: "List Logs Lambda Function ARN"
+    Value: !GetAtt ListLogsFunction.Arn
+
+  GetLogFunction:
+    Description: "Get Log Lambda Function ARN"
+    Value: !GetAtt GetLogFunction.Arn

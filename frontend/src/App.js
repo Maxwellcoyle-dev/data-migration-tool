@@ -4,13 +4,16 @@ import { Route, Routes } from "react-router-dom";
 // Pages
 import Home from "./pages/Home";
 import Authentication from "./pages/Authentication";
+import LogsPage from "./pages/LogsPage/LogsPage.jsx";
+import Log from "./pages/Log/Log";
 
 // Components
 import Callback from "./components/Callback";
-import NavBar from "./components/NavBar";
+import NavBar from "./components/NavBar/NavBar";
 
 // Hooks
 import useGetPlatforms from "./hooks/useGetPlatforms";
+import useListImportLogs from "./hooks/useListImportLogs.mjs";
 
 // context
 import { ResponseLogProvider } from "./context/responseLogContext";
@@ -25,6 +28,11 @@ const App = ({ user }) => {
   const [authenticated, setAuthenticated] = useState(false);
 
   const { platforms } = useGetPlatforms({ userId: user.userId });
+
+  const { logsList } = useListImportLogs();
+  useEffect(() => {
+    console.log("logsList", logsList);
+  }, [logsList]);
 
   useEffect(() => {
     if (platforms?.length) {
@@ -63,6 +71,8 @@ const App = ({ user }) => {
               <Home currentPlatformInfo={currentPlatformInfo} user={user} />
             }
           />
+          <Route path="/logs" element={<LogsPage logsList={logsList} />} />
+          <Route path="/log/:id" element={<Log />} />
           <Route
             path="/authentication"
             element={

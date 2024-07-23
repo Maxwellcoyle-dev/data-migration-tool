@@ -9,15 +9,13 @@ const CSVPreviewSection = ({
   handleOptionChange,
 }) => (
   <div>
-    {csvData.length > 0 && (
-      <CSVPreview
-        csvData={csvData}
-        importType={importType}
-        options={typeFields.options}
-        importOptions={importOptions}
-        handleOptionChange={handleOptionChange}
-      />
-    )}
+    <CSVPreview
+      csvData={csvData}
+      importType={importType}
+      options={typeFields.options}
+      importOptions={importOptions}
+      handleOptionChange={handleOptionChange}
+    />
   </div>
 );
 
