@@ -80,10 +80,10 @@ Resources:
   # -----
 
   # Data Migration Resources
-  DoceboMigrationLogTable:
+  MigrationImportTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: DoceboMigrationLogTable
+      TableName: MigrationImportTable
       AttributeDefinitions:
         - AttributeName: importId
           AttributeType: S
@@ -101,6 +101,27 @@ Resources:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
+  MigrationLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MigrationLogTable
+      AttributeDefinitions:
+        - AttributeName: logId
+          AttributeType: S
+        - AttributeName: importId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: logId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: importId-index
+          KeySchema:
+            - AttributeName: importId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
   DoceboMigrationLogBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -110,6 +131,9 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: DoceboDataMigrationQueue
+      VisibilityTimeout: 600 # Set this to a higher value than your Lambda timeout
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      DelaySeconds: 30 # Delay before processing messages
 
   CSVHandlerFunction:
     Type: AWS::Serverless::Function
@@ -117,6 +141,7 @@ Resources:
       CodeUri: functions/csv-handler/
       Handler: app.handler
       Runtime: nodejs20.x
+      Timeout: 300
       Architectures:
         - x86_64
       Events:
@@ -127,7 +152,7 @@ Resources:
             Method: POST
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref DoceboMigrationLogTable
+            TableName: !Ref MigrationImportTable
         - Statement:
             Effect: Allow
             Action:
@@ -136,7 +161,7 @@ Resources:
       Environment:
         Variables:
           SQS_QUEUE_URL: !Ref DoceboDataMigrationQueue
-          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
           MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
 
   ChunkHandlerFunction:
@@ -145,6 +170,7 @@ Resources:
       CodeUri: functions/chunk-handler/
       Handler: app.handler
       Runtime: nodejs20.x
+      Timeout: 300
       Architectures:
         - x86_64
       Events:
@@ -152,11 +178,14 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt DoceboDataMigrationQueue.Arn
+      ReservedConcurrentExecutions: 1
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref AccessTokensTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref DoceboMigrationLogTable
+            TableName: !Ref MigrationLogTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MigrationImportTable
         - Statement:
             Effect: Allow
             Action:
@@ -173,28 +202,31 @@ Resources:
             Resource: !GetAtt DoceboDataMigrationQueue.Arn
       Environment:
         Variables:
-          SQS_QUEUE_URL: !Ref DoceboDataMigrationQueue
-          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          CHUNK_SQS_URL: !Ref DoceboDataMigrationQueue
+          MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
+          MIGRATION_LOG_TABLE: !Ref MigrationLogTable
           ACCESS_TOKEN_TABLE_NAME: AccessTokens
           MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
 
-  ListLogsFunction:
+  ListImportsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/list-logs/
+      CodeUri: functions/list-imports/
       Handler: app.handler
       Runtime: nodejs20.x
       Architectures:
         - x86_64
       Events:
-        ListLogs:
+        ListImports:
           Type: Api
           Properties:
-            Path: /list-logs
+            Path: /list-imports
             Method: GET
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref DoceboMigrationLogTable
+            TableName: !Ref MigrationLogTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref MigrationImportTable
         - Statement:
             Effect: Allow
             Action:
@@ -202,25 +234,28 @@ Resources:
             Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
       Environment:
         Variables:
-          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
+          MIGRATION_LOG_TABLE: !Ref MigrationLogTable
 
-  GetLogFunction:
+  GetImportFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/get-log/
+      CodeUri: functions/get-import/
       Handler: app.handler
       Runtime: nodejs20.x
       Architectures:
         - x86_64
       Events:
-        GetLog:
+        GetImport:
           Type: Api
           Properties:
-            Path: /get-log
+            Path: /get-import
             Method: GET
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref DoceboMigrationLogTable
+            TableName: !Ref MigrationImportTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref MigrationLogTable
         - Statement:
             Effect: Allow
             Action:
@@ -228,7 +263,8 @@ Resources:
             Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
       Environment:
         Variables:
-          MIGRATION_LOG_TABLE: !Ref DoceboMigrationLogTable
+          MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
+          MIGRATION_LOG_TABLE: !Ref MigrationLogTable
           MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
 
 Outputs:
@@ -248,17 +284,21 @@ Outputs:
     Description: "API Gateway endpoint URL for the main handler function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/post-csv"
 
-  ListLogsUrl:
+  ListImportsUrl:
     Description: "API Gateway endpoint URL for the List Logs function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/list-logs"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/list-imports"
 
-  GetLogUrl:
+  GetImportUrl:
     Description: "API Gateway endpoint URL for the Get Log function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/get-log"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/get-import"
 
-  DoceboMigrationLogTable:
+  MigrationImportTable:
+    Description: "DynamoDB Table for Docebo Migration Imports"
+    Value: !Ref MigrationImportTable
+
+  MigrationLogTable:
     Description: "DynamoDB Table for Docebo Migration Logs"
-    Value: !Ref DoceboMigrationLogTable
+    Value: !Ref MigrationLogTable
 
   DoceboMigrationLogBucket:
     Description: "S3 Bucket for Docebo Migration Logs"
@@ -276,10 +316,10 @@ Outputs:
     Description: "Auxiliary Chunk Handler Lambda Function ARN"
     Value: !GetAtt ChunkHandlerFunction.Arn
 
-  ListLogsFunction:
+  ListImportsFunction:
     Description: "List Logs Lambda Function ARN"
-    Value: !GetAtt ListLogsFunction.Arn
+    Value: !GetAtt ListImportsFunction.Arn
 
-  GetLogFunction:
+  GetImportFunction:
     Description: "Get Log Lambda Function ARN"
-    Value: !GetAtt GetLogFunction.Arn
+    Value: !GetAtt GetImportFunction.Arn

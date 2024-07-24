@@ -18,7 +18,7 @@ export const handler = async (event) => {
   console.log("userId", userId);
   // scan table for gsi items matching userId
   const params = {
-    TableName: process.env.MIGRATION_LOG_TABLE,
+    TableName: process.env.MIGRATION_IMPORT_TABLE,
     IndexName: "userId-index",
     KeyConditionExpression: "userId = :userId",
     ExpressionAttributeValues: {
@@ -41,12 +41,6 @@ export const handler = async (event) => {
         statusMessage: item.statusMessage.S,
         importDate: item.importDate.S,
         domain: item.domain.S,
-        s3Metadata: item.s3ChunkMetadata?.L.map((chunk) => {
-          return {
-            chunk: chunk.M.chunk.S,
-            s3Key: chunk.M.url.S,
-          };
-        }),
       };
     });
     console.log("returnData", returnData);

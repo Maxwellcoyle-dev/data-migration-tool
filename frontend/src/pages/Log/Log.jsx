@@ -16,7 +16,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 
-import useGetLog from "../../hooks/useGetLog";
+import useGetImport from "../../hooks/useGetImport";
 
 import styles from "./Log.module.css";
 
@@ -28,16 +28,23 @@ const Log = () => {
   const [tableSorter, setTableSorter] = useState({});
 
   const { id } = useParams();
-  const { logData, logIsLoading, logIsError, refetchLog } = useGetLog(id);
+  const { importData, importIsLoading, importIsError, refetchImport } =
+    useGetImport(id);
 
   useEffect(() => {
-    console.log("logData", logData);
-    setFilteredData(
-      Array.isArray(logData?.logContent?.data) ? logData.logContent.data : []
-    );
-  }, [logData]);
+    if (importData) {
+      console.log("importData", importData);
+    }
+  }, [importData]);
 
-  const keys = Object.keys(logData?.logContent?.data?.[0] || {});
+  useEffect(() => {
+    console.log("importData", importData);
+    setFilteredData(
+      Array.isArray(importData?.logContent) ? importData.logContent : []
+    );
+  }, [importData]);
+
+  const keys = Object.keys(importData?.logContent?.[0] || {});
 
   const columns = keys.map((key) => {
     if (key === "success") {
@@ -109,7 +116,7 @@ const Log = () => {
   });
 
   const handleTableChange = (pagination, filters, sorter) => {
-    let filtered = [...(logData?.logContent.data || [])];
+    let filtered = [...(importData?.logContent || [])];
 
     if (filters.success) {
       filtered = filtered.filter((item) =>
@@ -141,7 +148,7 @@ const Log = () => {
   const resetFiltersAndSorting = () => {
     setTableFilters({});
     setTableSorter({});
-    setFilteredData(logData?.logContent.data || []);
+    setFilteredData(importData?.logContent || []);
   };
 
   const downloadCSV = () => {
@@ -184,7 +191,7 @@ const Log = () => {
     }).format(new Date(date));
   };
 
-  if (logIsLoading) {
+  if (importIsLoading) {
     return (
       <div className={styles.logTableContainer}>
         <div
@@ -201,7 +208,7 @@ const Log = () => {
     );
   }
 
-  if (logIsError) {
+  if (importIsError) {
     return (
       <div className={styles.logTableContainer}>
         <div
@@ -234,12 +241,11 @@ const Log = () => {
         }}
       >
         <h3>Log Data</h3>
-        <div>
-          <Button
-            onClick={downloadCSV}
-            icon={<DownloadOutlined />}
-            style={{ marginRight: "8px" }}
-          >
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          <Button icon={<ReloadOutlined />} onClick={refetchImport}>
+            Refresh
+          </Button>
+          <Button onClick={downloadCSV} icon={<DownloadOutlined />}>
             Download CSV
           </Button>
           <Button onClick={resetFiltersAndSorting} icon={<ReloadOutlined />}>
@@ -251,25 +257,25 @@ const Log = () => {
         <Panel header="Import Metadata" key="1">
           <Descriptions title="Import Metadata" bordered column={1}>
             <Descriptions.Item label="Import Type">
-              {logData?.logItem?.importType.S}
+              {importData?.importItem?.importType.S}
             </Descriptions.Item>
             <Descriptions.Item label="Status">
-              {logData?.logItem?.status?.S}
+              {importData?.importItem?.status?.S}
             </Descriptions.Item>
             <Descriptions.Item label="Status Message">
-              {logData?.logItem?.statusMessage?.S}
+              {importData?.importItem?.statusMessage?.S}
             </Descriptions.Item>
             <Descriptions.Item label="Chunk Count">
-              {logData?.logItem?.chunkCount?.N}
+              {importData?.importItem?.chunkCount?.N}
             </Descriptions.Item>
             <Descriptions.Item label="Import Date">
-              {formatDate(logData?.logItem?.importDate?.S)}
+              {formatDate(importData?.importItem?.importDate.S)}
             </Descriptions.Item>
             <Descriptions.Item label="Domain">
-              {logData?.logItem?.domain?.S}
+              {importData?.importItem?.domain?.S}
             </Descriptions.Item>
             <Descriptions.Item label="Import Options">
-              {logData?.logItem?.importOptions?.S}
+              {importData?.importItem?.importOptions?.S}
             </Descriptions.Item>
           </Descriptions>
         </Panel>
