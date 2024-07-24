@@ -114,7 +114,7 @@ export const handler = async (event) => {
 
     // Create a record with metadata in DoceboMigrationLogTable
     const dynamoParams = {
-      TableName: process.env.MIGRATION_LOG_TABLE,
+      TableName: process.env.MIGRATION_IMPORT_TABLE,
       Item: {
         importId: { S: importId },
         userId: { S: userId },
@@ -122,7 +122,6 @@ export const handler = async (event) => {
         statusMessage: { S: "Chunks sent to handler." },
         importType: { S: importType },
         chunkCount: { N: chunkCount.toString() },
-        s3ChunkMetadata: { L: [] },
         importOptions: { S: JSON.stringify(importOptions) },
         domain: { S: domain },
         importDate: { S: importMetadata.importDate },

@@ -1,105 +1,90 @@
-// process the message form sqs
-// get the access token from dynamoDB
-// post send data to Docebo API
-// process logs & store in S3
-// update dynamoDB Item with status, s3 metadata
+import { SQSClient, DeleteMessageCommand } from "@aws-sdk/client-sqs";
 
 import { getAccessToken } from "./utils/getAccessToken.mjs";
 import batchDoceboImport from "./utils/batchDoceboImport.mjs";
 import nonBatchDoceboImport from "./utils/nonBatchDoceboImport.mjs";
 import addLogsToS3 from "./utils/addLogsToS3.mjs";
-import updateLogTable from "./utils/updateLogTable.mjs";
-
-// import { chunkSQSMessageEvent as event } from "../events.mjs";
+import addLogToTable from "./utils/AddLogToTable.mjs";
 
 export const handler = async (event) => {
-  console.log(event);
+  console.log("Event received:", event);
 
-  // process the message
-  const body = JSON.parse(event.Records[0].body);
-  const {
-    chunk,
-    chunkNumber,
-    importId,
-    userId,
-    importType,
-    importOptions,
-    domain,
-  } = body;
+  const sqs = new SQSClient({ region: "us-east-2" });
 
-  console.log(
-    "Received chunk:",
-    chunk,
-    chunkNumber,
-    importId,
-    userId,
-    importType,
-    importOptions,
-    domain
-  );
-
-  // get the access token
-  const accessToken = await getAccessToken(userId, domain);
-
-  let doceboResponse;
-
-  switch (importType) {
-    case "groups":
-      doceboResponse = await nonBatchDoceboImport(
-        domain,
-        importType,
-        accessToken,
+  for (const record of event.Records) {
+    try {
+      const body = JSON.parse(record.body);
+      const {
         chunk,
-        importOptions
-      );
-      break;
-    default:
-      doceboResponse = await batchDoceboImport(
-        domain,
-        importType,
-        accessToken,
-        chunk,
-        importOptions
-      );
-  }
-
-  if (doceboResponse.success === false) {
-    // update DynamoDB item
-    await updateLogTable(importId, chunkNumber, doceboResponse);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
+        chunkCount,
+        chunkNumber,
         importId,
-        status: "failed",
-        message: doceboResponse.statusMessage,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "OPTIONS,POST",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    };
+        userId,
+        importType,
+        importOptions,
+        domain,
+      } = body;
+
+      console.log(
+        "Processing chunk:",
+        chunk,
+        chunkCount,
+        chunkNumber,
+        importId,
+        userId,
+        importType,
+        importOptions,
+        domain
+      );
+
+      // get the access token
+      const accessToken = await getAccessToken(userId, domain);
+
+      let doceboResponse;
+
+      switch (importType) {
+        case "groups":
+          doceboResponse = await nonBatchDoceboImport(
+            domain,
+            importType,
+            accessToken,
+            chunk,
+            importOptions
+          );
+          break;
+        default:
+          doceboResponse = await batchDoceboImport(
+            domain,
+            importType,
+            accessToken,
+            chunk,
+            importOptions
+          );
+      }
+
+      // store logs in S3
+      await addLogsToS3(importId, chunkNumber, doceboResponse);
+
+      // update DynamoDB with the log
+      await addLogToTable(importId, chunkNumber, doceboResponse);
+
+      // delete processed SQS message
+      const deleteParams = {
+        QueueUrl: process.env.CHUNK_SQS_URL,
+        ReceiptHandle: record.receiptHandle,
+      };
+      console.log("Deleting message from SQS");
+      const data = await sqs.send(new DeleteMessageCommand(deleteParams));
+      console.log("Delete message response:", data);
+    } catch (error) {
+      console.error("Error processing message:", error);
+    }
   }
-
-  // store logs in S3
-  await addLogsToS3(importId, chunkNumber, doceboResponse);
-
-  await updateLogTable(importId, chunkNumber, doceboResponse);
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      importId,
-      status: "success",
-      message: "Chunk processed successfully",
+      status: "Batch processing completed",
     }),
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "OPTIONS,POST",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
   };
 };

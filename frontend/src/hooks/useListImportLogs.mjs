@@ -16,22 +16,27 @@ const useListImportLogs = () => {
   }, []);
 
   const {
-    data: logsList,
-    isLoading: logsListIsLoading,
-    isError: logsListIsError,
-    refetch: refetchLogsList,
+    data: importsList,
+    isLoading: importsListIsLoading,
+    isError: importsListIsError,
+    refetch: refetchImportsList,
   } = useQuery({
     queryKey: ["log-list", user?.userId],
     queryFn: async () => {
       const response = await axios.get(
-        `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/list-logs?userId=${user.userId}`
+        `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/list-imports?userId=${user.userId}`
       );
       return response.data;
     },
     enabled: !!user?.userId,
   });
 
-  return { logsList, logsListIsLoading, logsListIsError, refetchLogsList };
+  return {
+    importsList,
+    importsListIsLoading,
+    importsListIsError,
+    refetchImportsList,
+  };
 };
 
 export default useListImportLogs;

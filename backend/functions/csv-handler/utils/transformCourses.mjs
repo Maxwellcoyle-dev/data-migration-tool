@@ -56,7 +56,7 @@ const transformCourses = (data) => {
   });
 
   console.log("courseData", transformedData);
-  const batchCount = 300;
+  const batchCount = 100;
   return { transformedData, batchCount };
 };
 

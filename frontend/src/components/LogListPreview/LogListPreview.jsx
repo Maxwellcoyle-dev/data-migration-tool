@@ -7,12 +7,16 @@ import useListImportLogs from "../../hooks/useListImportLogs.mjs";
 import styles from "./LogListPreview.module.css";
 
 const LogListPreview = () => {
-  const { logsList, logsListIsLoading, logsListIsError, refetchLogsList } =
-    useListImportLogs();
+  const {
+    importsList,
+    importsListIsLoading,
+    importsListIsError,
+    refetchImportsList,
+  } = useListImportLogs();
 
   const navigate = useNavigate();
 
-  const tableData = logsList?.map((log) => {
+  const tableData = importsList?.map((log) => {
     return {
       key: log.importId,
       domain: log.domain,
@@ -86,13 +90,13 @@ const LogListPreview = () => {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
         <h3>Recent Logs</h3>
-        <Button onClick={refetchLogsList}>
+        <Button onClick={refetchImportsList}>
           <ReloadOutlined />
         </Button>
       </div>
-      {logsListIsLoading && <div>Loading...</div>}
-      {logsListIsError && <div>Error fetching logs</div>}
-      {logsList && (
+      {importsListIsLoading && <div>Loading...</div>}
+      {importsListIsError && <div>Error fetching logs</div>}
+      {importsList && (
         <div className={styles.previewListContainer}>
           <Table
             columns={tableColumns}
