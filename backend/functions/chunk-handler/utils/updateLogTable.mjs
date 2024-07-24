@@ -12,57 +12,41 @@ const getLogTableItem = async (importId) => {
     Key: {
       importId: { S: importId },
     },
+    ProjectExpression: "chunkCount",
   };
 
   try {
     const data = await dynamoClient.send(new GetItemCommand(params));
-    console.log("DynamoDB response:", data);
-    return data.Item;
+    console.log("Get Log Table Item response:", data);
+    return data;
   } catch (err) {
     console.error("DynamoDB error:", err);
   }
 };
 
-const updateLogTable = async (importId, chunkNumber, doceboResponse) => {
+const updateLogTable = async (
+  importId,
+  chunkNumber,
+  chunkCount,
+  doceboResponse
+) => {
   console.log("Updating log table with chunk metadata");
-
+  console.log("importId", importId);
   console.log("chunkNumber", chunkNumber);
-  const logTableItem = await getLogTableItem(importId);
-  console.log("logTableItem", logTableItem);
-  const chunkCount = parseInt(logTableItem.chunkCount.N);
   console.log("chunkCount", chunkCount);
-
-  let status;
-  if (doceboResponse.success) {
-    status = chunkCount === chunkNumber ? "completed" : "in-progress";
-  }
-
-  if (!doceboResponse.success) {
-    status = "failed";
-  }
-
-  console.log("status", status);
+  console.log("doceboResponse", doceboResponse);
 
   const params = {
     TableName: process.env.MIGRATION_LOG_TABLE,
     Key: {
+      logId: { S: `${importId}_${chunkNumber}` },
       importId: { S: importId },
     },
-    UpdateExpression:
-      "SET #status = :status, #statusMessage = :statusMessage, #s3Metadata = list_append(if_not_exists(#s3Metadata, :emptyList), :newChunk)",
+    UpdateExpression: "SET #s3Metadata = :newChunk",
     ExpressionAttributeNames: {
-      "#status": "status",
-      "#statusMessage": "statusMessage",
       "#s3Metadata": "s3ChunkMetadata",
     },
     ExpressionAttributeValues: {
-      ":status": {
-        S: status,
-      },
-      ":statusMessage": {
-        S: doceboResponse.statusMessage,
-      },
-      ":emptyList": { L: [] },
       ":newChunk": {
         L: [
           {

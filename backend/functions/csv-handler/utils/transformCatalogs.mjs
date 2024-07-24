@@ -7,7 +7,7 @@ const transformCatalogs = (data) => {
     };
   });
   console.log("catalogData", transformedData);
-  const batchCount = 300;
+  const batchCount = 100;
   return { transformedData, batchCount };
 };
 

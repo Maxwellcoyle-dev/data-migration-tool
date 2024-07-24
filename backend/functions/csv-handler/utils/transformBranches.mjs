@@ -21,7 +21,7 @@ const transformBranches = (data) => {
   });
 
   console.log("branchData", transformedData);
-  return { transformedData, batchCount: 300 };
+  return { transformedData, batchCount: 100 };
 };
 
 export default transformBranches;
