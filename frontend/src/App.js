@@ -13,7 +13,7 @@ import NavBar from "./components/NavBar/NavBar";
 
 // Hooks
 import useGetPlatforms from "./hooks/useGetPlatforms";
-import useListImportLogs from "./hooks/useListImportLogs.mjs";
+import useListImportLogs from "./hooks/useListImportLogs.js";
 
 // context
 import { ResponseLogProvider } from "./context/responseLogContext";

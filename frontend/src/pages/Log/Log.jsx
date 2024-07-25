@@ -17,12 +17,14 @@ import {
 } from "@ant-design/icons";
 
 import useGetImport from "../../hooks/useGetImport";
+import useListImportLogs from "../../hooks/useListImportLogs.js";
 
 import styles from "./Log.module.css";
 
 const { Panel } = Collapse;
 
 const Log = () => {
+  const [importListItemIndex, setImportListItemIndex] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
   const [tableFilters, setTableFilters] = useState({});
   const [tableSorter, setTableSorter] = useState({});
@@ -180,6 +182,7 @@ const Log = () => {
   };
 
   const formatDate = (date) => {
+    console.log("date", date);
     return new Intl.DateTimeFormat(navigator.language, {
       year: "numeric",
       month: "2-digit",
@@ -190,23 +193,6 @@ const Log = () => {
       timeZoneName: "short",
     }).format(new Date(date));
   };
-
-  if (importIsLoading) {
-    return (
-      <div className={styles.logTableContainer}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100%",
-          }}
-        >
-          <Spin tip="Loading..." />
-        </div>
-      </div>
-    );
-  }
 
   if (importIsError) {
     return (
@@ -255,38 +241,56 @@ const Log = () => {
       </div>
       <Collapse defaultActiveKey={[]}>
         <Panel header="Import Metadata" key="1">
-          <Descriptions title="Import Metadata" bordered column={1}>
-            <Descriptions.Item label="Import Type">
-              {importData?.importItem?.importType.S}
-            </Descriptions.Item>
-            <Descriptions.Item label="Status">
-              {importData?.importItem?.importStatus?.S}
-            </Descriptions.Item>
-            <Descriptions.Item label="Status Message">
-              {importData?.importItem?.statusMessage?.S}
-            </Descriptions.Item>
-            <Descriptions.Item label="Chunk Count">
-              {importData?.importItem?.chunkCount?.N}
-            </Descriptions.Item>
-            <Descriptions.Item label="Import Date">
-              {formatDate(importData?.importItem?.importDate.S)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Domain">
-              {importData?.importItem?.domain?.S}
-            </Descriptions.Item>
-            <Descriptions.Item label="Import Options">
-              {importData?.importItem?.importOptions?.S}
-            </Descriptions.Item>
-          </Descriptions>
+          {importIsLoading && (
+            <div className={styles.logTableContainer}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
+                <Spin tip="Loading..." />
+              </div>
+            </div>
+          )}
+          {importData && (
+            <Descriptions title="Import Metadata" bordered column={1}>
+              <Descriptions.Item label="Import Type">
+                {importData.importItem.importType.S}
+              </Descriptions.Item>
+              <Descriptions.Item label="Status">
+                {importData.importItem.importStatus.S}
+              </Descriptions.Item>
+              <Descriptions.Item label="Status Message">
+                {importData.importItem.statusMessage.S}
+              </Descriptions.Item>
+              <Descriptions.Item label="Chunk Count">
+                {importData.importItem.chunkCount.N}
+              </Descriptions.Item>
+              <Descriptions.Item label="Import Date">
+                {formatDate(importData.importItem.importDate.S)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Domain">
+                {importData.importItem.domain.S}
+              </Descriptions.Item>
+              <Descriptions.Item label="Import Options">
+                {importData.importItem.importOptions.S}
+              </Descriptions.Item>
+            </Descriptions>
+          )}
         </Panel>
       </Collapse>
 
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        rowKey="row_index"
-        onChange={handleTableChange}
-      />
+      {importData && (
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="row_index"
+          onChange={handleTableChange}
+        />
+      )}
     </div>
   );
 };
