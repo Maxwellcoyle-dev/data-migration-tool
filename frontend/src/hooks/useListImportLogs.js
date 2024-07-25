@@ -28,6 +28,8 @@ const useListImportLogs = () => {
       return response.data;
     },
     enabled: !!user?.userId,
+    staleTime: 30000,
+    cacheTime: 30000,
   });
 
   return {

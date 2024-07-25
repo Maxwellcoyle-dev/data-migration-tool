@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Table, Tag } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
-import useListImportLogs from "../../hooks/useListImportLogs.mjs";
+import useListImportLogs from "../../hooks/useListImportLogs.js";
 
 import styles from "./LogListPreview.module.css";
 
