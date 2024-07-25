@@ -18,6 +18,10 @@ const CSVUploadSection = ({
   importType,
   csvReadyForImport,
   handleSubmit,
+  isPending,
+  isError,
+  csvUploadError,
+  uploadCSVResponseData,
 }) => {
   const [view, setView] = useState("dropbox");
 
@@ -45,24 +49,38 @@ const CSVUploadSection = ({
         display: "flex",
       }}
     >
-      {view === "dropbox" ? (
-        <CSVDropbox
-          onUpload={handleUpload}
-          setCsvValidationError={setCsvValidationError}
-          csvValidationError={csvValidationError}
-          setCsvTransformError={setCsvTransformError}
-          importType={importType}
-          handleResetDropbox={handleResetDropbox}
-        />
-      ) : (
-        <CSVUploader
-          csvReadyForImport={csvReadyForImport}
-          handleSubmit={handleSubmit}
-          setCsvData={setCsvData}
-          setImportOptions={setImportOptions}
-          setView={setView}
-        />
-      )}
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <h2>Upload CSV</h2>
+        {view === "dropbox" ? (
+          <CSVDropbox
+            onUpload={handleUpload}
+            setCsvValidationError={setCsvValidationError}
+            csvValidationError={csvValidationError}
+            setCsvTransformError={setCsvTransformError}
+            importType={importType}
+            handleResetDropbox={handleResetDropbox}
+          />
+        ) : (
+          <CSVUploader
+            csvReadyForImport={csvReadyForImport}
+            handleSubmit={handleSubmit}
+            setCsvData={setCsvData}
+            setImportOptions={setImportOptions}
+            setView={setView}
+            isPending={isPending}
+            isError={isError}
+            csvUploadError={csvUploadError}
+            uploadCSVResponseData={uploadCSVResponseData}
+          />
+        )}
+      </div>
     </div>
   );
 };

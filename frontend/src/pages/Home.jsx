@@ -167,13 +167,15 @@ const Home = ({ currentPlatformInfo, user }) => {
         csvValidationError={csvValidationError}
         csvtransformError={csvtransformError}
       />
-      <CSVPreviewSection
-        csvData={csvData}
-        importType={importType}
-        typeFields={typeFields}
-        importOptions={importOptions}
-        handleOptionChange={handleOptionChange}
-      />
+      {csvData.length > 0 && (
+        <CSVPreviewSection
+          csvData={csvData}
+          importType={importType}
+          typeFields={typeFields}
+          importOptions={importOptions}
+          handleOptionChange={handleOptionChange}
+        />
+      )}
       <LogListPreview />
     </div>
   );

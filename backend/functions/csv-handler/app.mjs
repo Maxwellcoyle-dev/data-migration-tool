@@ -73,6 +73,7 @@ export const handler = async (event) => {
     importId,
     userId,
     status: "pending",
+    statusMessage: "CSV import has been initiated.",
     importType,
     importOptions,
     domain,
@@ -118,8 +119,8 @@ export const handler = async (event) => {
       Item: {
         importId: { S: importId },
         userId: { S: userId },
-        status: { S: "pending" },
-        statusMessage: { S: "Chunks sent to handler." },
+        importStatus: { S: "pending" },
+        statusMessage: { S: "CSV import has been initiated." },
         importType: { S: importType },
         chunkCount: { N: chunkCount.toString() },
         importOptions: { S: JSON.stringify(importOptions) },
@@ -136,9 +137,9 @@ export const handler = async (event) => {
       statusCode: 400,
       body: JSON.stringify({
         importId: importMetadata.importId,
-        status: "failed",
-        message: "Error saving metadata to DynamoDB",
-        error: error.message,
+        importStatus: "failed",
+        statusMessage: "Error saving metadata to DynamoDB",
+        errorMessage: error.message,
       }),
       headers: {
         "Content-Type": "application/json",

@@ -5,6 +5,7 @@ import batchDoceboImport from "./utils/batchDoceboImport.mjs";
 import nonBatchDoceboImport from "./utils/nonBatchDoceboImport.mjs";
 import addLogsToS3 from "./utils/addLogsToS3.mjs";
 import addLogToTable from "./utils/AddLogToTable.mjs";
+import updateImportTable from "./utils/updateImportTable.mjs";
 
 export const handler = async (event) => {
   console.log("Event received:", event);
@@ -60,6 +61,17 @@ export const handler = async (event) => {
             chunk,
             importOptions
           );
+      }
+
+      if (!doceboResponse.success) {
+        // update importtable with error
+        await updateImportTable(importId, doceboResponse.statusMessage);
+        return {
+          statusCode: 500,
+          body: JSON.stringify({
+            status: "Docebo API Error",
+          }),
+        };
       }
 
       // store logs in S3

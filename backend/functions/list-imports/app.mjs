@@ -37,7 +37,7 @@ export const handler = async (event) => {
         importId: item.importId.S,
         userId: item.userId.S,
         importType: item.importType.S,
-        status: item.status.S,
+        importStatus: item.importStatus.S,
         statusMessage: item.statusMessage.S,
         importDate: item.importDate.S,
         domain: item.domain.S,

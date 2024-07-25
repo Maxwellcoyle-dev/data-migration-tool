@@ -21,7 +21,8 @@ const LogListPreview = () => {
       key: log.importId,
       domain: log.domain,
       importDate: log.importDate,
-      status: log.status,
+      status: log.importStatus,
+      statusMessage: log.statusMessage,
       importType: log.importType,
       importId: log.importId,
     };
@@ -48,15 +49,20 @@ const LogListPreview = () => {
 
   const tableColumns = [
     {
+      title: "Date / Time",
+      dataIndex: "importDate",
+      key: "importDate",
+      render: (importDate) => formatDate(new Date(importDate)),
+    },
+    {
       title: "Domain",
       dataIndex: "domain",
       key: "domain",
     },
     {
-      title: "Date / Time",
-      dataIndex: "importDate",
-      key: "importDate",
-      render: (importDate) => formatDate(new Date(importDate)),
+      title: "Import Type",
+      dataIndex: "importType",
+      key: "importType",
     },
     {
       title: "Status",
@@ -72,9 +78,9 @@ const LogListPreview = () => {
       },
     },
     {
-      title: "Import Type",
-      dataIndex: "importType",
-      key: "importType",
+      title: "Status Message",
+      dataIndex: "statusMessage",
+      key: "statusMessage",
     },
     {
       title: "Actions",

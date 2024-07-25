@@ -21,7 +21,7 @@ const LogsPage = () => {
       key: log.importId,
       domain: log.domain,
       importDate: log.importDate,
-      status: log.status,
+      status: log.importStatus,
       importType: log.importType,
       importId: log.importId,
     };

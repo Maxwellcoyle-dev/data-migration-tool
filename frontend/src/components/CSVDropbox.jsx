@@ -74,30 +74,23 @@ const CSVDropbox = ({
     noKeyboard: true,
   });
 
-  return (
-    <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-      <div style={{ width: "100%" }}>
-        <h2>Upload CSV</h2>
-        {csvValidationError.length > 0 ? (
-          <div style={{ marginBottom: "1rem" }}>
-            <Alert
-              message="Error"
-              description={csvValidationError}
-              type="error"
-              showIcon
-              action={<Button onClick={handleResetDropbox}>clear</Button>}
-            />
-          </div>
-        ) : (
-          <div {...getRootProps()} className="dropzone" style={styles.dropzone}>
-            <input {...getInputProps()} />
-            <p>Drag and drop a CSV file here, or</p>
-            <button type="button" onClick={open} style={styles.button}>
-              Browse Files
-            </button>
-          </div>
-        )}
-      </div>
+  return csvValidationError.length > 0 ? (
+    <div style={{ marginBottom: "1rem" }}>
+      <Alert
+        message="Error"
+        description={csvValidationError}
+        type="error"
+        showIcon
+        action={<Button onClick={handleResetDropbox}>clear</Button>}
+      />
+    </div>
+  ) : (
+    <div {...getRootProps()} className="dropzone" style={styles.dropzone}>
+      <input {...getInputProps()} />
+      <p>Drag and drop a CSV file here, or</p>
+      <button type="button" onClick={open} style={styles.button}>
+        Browse Files
+      </button>
     </div>
   );
 };
