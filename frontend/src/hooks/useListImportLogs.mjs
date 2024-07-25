@@ -10,7 +10,6 @@ const useListImportLogs = () => {
     getCurrentUser()
       .then((user) => {
         setUser(user);
-        console.log(user);
       })
       .catch((error) => console.error(error));
   }, []);

@@ -22,6 +22,7 @@ const LogsPage = () => {
       domain: log.domain,
       importDate: log.importDate,
       status: log.importStatus,
+      message: log.statusMessage,
       importType: log.importType,
       importId: log.importId,
     };
@@ -40,23 +41,27 @@ const LogsPage = () => {
   };
 
   const tableTags = {
-    completed: { color: "green", label: "Completed" },
-    "in-progress": { color: "blue", label: "In Progress" },
+    complete: { color: "green", label: "Complete" },
     pending: { color: "orange", label: "Pending" },
     failed: { color: "red", label: "Failed" },
   };
 
   const tableColumns = [
     {
+      title: "Date / Time",
+      dataIndex: "importDate",
+      key: "importDate",
+      render: (importDate) => formatDate(new Date(importDate)),
+    },
+    {
       title: "Domain",
       dataIndex: "domain",
       key: "domain",
     },
     {
-      title: "Date / Time",
-      dataIndex: "importDate",
-      key: "importDate",
-      render: (importDate) => formatDate(new Date(importDate)),
+      title: "Import Type",
+      dataIndex: "importType",
+      key: "importType",
     },
     {
       title: "Status",
@@ -72,9 +77,9 @@ const LogsPage = () => {
       },
     },
     {
-      title: "Import Type",
-      dataIndex: "importType",
-      key: "importType",
+      title: "Status Message",
+      dataIndex: "message",
+      key: "message",
     },
     {
       title: "Actions",

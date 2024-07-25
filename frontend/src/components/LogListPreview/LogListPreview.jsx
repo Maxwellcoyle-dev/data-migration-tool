@@ -28,6 +28,10 @@ const LogListPreview = () => {
     };
   });
 
+  useEffect(() => {
+    console.log("importsList", importsList);
+  }, [importsList]);
+
   const formatDate = (date) => {
     return new Intl.DateTimeFormat(navigator.language, {
       year: "numeric",
@@ -41,7 +45,7 @@ const LogListPreview = () => {
   };
 
   const tableTags = {
-    completed: { color: "green", label: "Completed" },
+    complete: { color: "green", label: "Complete" },
     "in-progress": { color: "blue", label: "In Progress" },
     pending: { color: "orange", label: "Pending" },
     failed: { color: "red", label: "Failed" },
