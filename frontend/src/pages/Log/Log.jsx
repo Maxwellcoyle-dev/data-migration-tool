@@ -260,7 +260,7 @@ const Log = () => {
               {importData?.importItem?.importType.S}
             </Descriptions.Item>
             <Descriptions.Item label="Status">
-              {importData?.importItem?.status?.S}
+              {importData?.importItem?.importStatus?.S}
             </Descriptions.Item>
             <Descriptions.Item label="Status Message">
               {importData?.importItem?.statusMessage?.S}

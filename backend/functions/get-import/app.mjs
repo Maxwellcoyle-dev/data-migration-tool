@@ -52,19 +52,19 @@ export const handler = async (event) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({ message: "import not found" }),
+      body: JSON.stringify({ statusMessage: "import not found" }),
     };
   }
 
-  if (importItem.status.S === "failed") {
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({ importItem }),
-    };
-  }
+  // if (importItem.importStatus.S === "failed") {
+  //   return {
+  //     statusCode: 200,
+  //     headers: {
+  //       "Access-Control-Allow-Origin": "*",
+  //     },
+  //     body: JSON.stringify({ importItem }),
+  //   };
+  // }
 
   // get logs with GSI importId
   const getLogParams = {
