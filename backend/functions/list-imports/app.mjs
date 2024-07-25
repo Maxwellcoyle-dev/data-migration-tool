@@ -1,4 +1,7 @@
 import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
+
+import handlePendingImports from "./utilities/handlePendingImports.mjs";
+
 const client = new DynamoDBClient({ region: "us-east-2" });
 
 export const handler = async (event) => {
@@ -31,18 +34,34 @@ export const handler = async (event) => {
     const data = await client.send(command);
     console.log("data", data);
 
-    let returnData = data.Items.map((item) => {
+    let returnData = [];
+
+    for (const item of data.Items) {
       console.log("item", item);
-      return {
+      // handle items with importStatus of "pending" need to check if all of the chunks have been processed
+      let newImportStatus = item.importStatus.S;
+      let newStatusMessage = item.statusMessage.S;
+      console.log("item.importStatus.S", item.importStatus.S);
+      console.log("item.statusMessage.S", item.statusMessage.S);
+
+      if (item.importStatus.S === "pending") {
+        const { status, message } = await handlePendingImports(item);
+        newImportStatus = status;
+        newStatusMessage = message;
+      }
+
+      returnData.push({
         importId: item.importId.S,
         userId: item.userId.S,
         importType: item.importType.S,
-        importStatus: item.importStatus.S,
-        statusMessage: item.statusMessage.S,
+        importStatus: newImportStatus,
+        chunkCount: item.chunkCount.N,
+        statusMessage: newStatusMessage,
         importDate: item.importDate.S,
         domain: item.domain.S,
-      };
-    });
+      });
+    }
+
     console.log("returnData", returnData);
 
     // sort items based on the most recent importDate timeStamp
