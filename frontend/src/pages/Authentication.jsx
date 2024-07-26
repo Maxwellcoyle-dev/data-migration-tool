@@ -1,23 +1,39 @@
 import React, { useEffect, useState } from "react";
-
+import { Form, Input, Button, Typography, Space } from "antd";
 import useGetPlatforms from "../hooks/useGetPlatforms";
+import useDeletePlatform from "../hooks/useDeletePlatform";
+import { useAppContext } from "../context/appContext";
 
-const Authentication = ({ user, setCurrentPlatformInfo, setAuthenticated }) => {
+const { Title, Text } = Typography;
+
+const Authentication = ({ user }) => {
   const [editPlatformDetails, setEditPlatformDetails] = useState(false);
   const [domain, setDomain] = useState("");
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
 
+  const { setCurrentPlatformInfo, setAuthenticated, authenticated } =
+    useAppContext();
+
   const { platforms } = useGetPlatforms({ userId: user.userId });
 
-  const handleSaveCredntials = () => {
+  const {
+    deletePlatformMutation,
+    deletePlatformIsLoading,
+    deletePlatformIsError,
+  } = useDeletePlatform();
+
+  const handleSaveCredentials = () => {
     setEditPlatformDetails(!editPlatformDetails);
     setCurrentPlatformInfo({ domain, clientId, clientSecret });
   };
 
-  // set the domain, clientId, and clientSecret to the first item in the platforms array
+  const handleDeletePlatform = () => {
+    deletePlatformMutation({ platformDomain: domain });
+  };
+
   useEffect(() => {
-    if (platforms.length) {
+    if (platforms?.length) {
       const platform = platforms[0];
       setDomain(platform.platformUrl);
       setClientId(platform.clientId);
@@ -29,7 +45,6 @@ const Authentication = ({ user, setCurrentPlatformInfo, setAuthenticated }) => {
     console.log("Authenticate", clientId, domain, clientSecret);
     const redirectUri = `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback`;
 
-    // Add clientId, domain, and clientSecret to the state parameter
     const state = encodeURIComponent(
       JSON.stringify({ clientId, domain, clientSecret, userId: user.userId })
     );
@@ -52,7 +67,6 @@ const Authentication = ({ user, setCurrentPlatformInfo, setAuthenticated }) => {
       clientSecret: platform.clientSecret,
     });
 
-    // if the platform.timeStamp is less than 60 minutes old, set authenticated to true
     const timeStamp = new Date(platform.timeStamp).getTime();
     const currentTime = new Date().getTime();
     const difference = currentTime - timeStamp;
@@ -64,87 +78,110 @@ const Authentication = ({ user, setCurrentPlatformInfo, setAuthenticated }) => {
     }
   };
 
+  const anonymizeClientSecret = (secret) => {
+    return secret.replace(/.(?=.{4})/g, "*");
+  };
+
+  const sectionStyle = {
+    border: `1px dashed ${authenticated ? "lightgreen" : "red"}`,
+    borderRadius: "8px",
+    padding: "20px",
+    marginBottom: "20px",
+  };
+
   return (
     <div style={{ padding: "0 3rem" }}>
       <div style={{ paddingTop: 20, paddingBottom: 20 }}>
-        <h3>Authenticate with Docebo</h3>
-        <form style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div>
-            <label
-              style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-            >
-              Domain:
+        <Title level={3} style={{ fontSize: "24px" }}>
+          Authenticate with Docebo
+        </Title>
+        <div style={sectionStyle}>
+          <Form layout="vertical" size="large">
+            <Form.Item label="Domain">
               {!editPlatformDetails ? (
-                <p style={{ padding: 0, margin: 0 }}>{domain}</p>
+                <Text style={{ fontSize: "18px" }}>{domain}</Text>
               ) : (
-                <input
-                  style={{ width: "400px" }}
-                  type="text"
+                <Input
+                  style={{ width: "100%" }}
                   value={domain}
                   onChange={(e) => setDomain(e.target.value)}
                 />
               )}
-            </label>
-          </div>
-          <div>
-            <label
-              style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-            >
-              Client ID:
+            </Form.Item>
+            <Form.Item label="Client ID">
               {!editPlatformDetails ? (
-                <p style={{ padding: 0, margin: 0 }}>{clientId}</p>
+                <Text style={{ fontSize: "18px" }}>{clientId}</Text>
               ) : (
-                <input
-                  style={{ width: "400px" }}
-                  type="text"
+                <Input
+                  style={{ width: "100%" }}
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
                 />
               )}
-            </label>
-          </div>
-          <div>
-            <label
-              style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-            >
-              Client Secret:
+            </Form.Item>
+            <Form.Item label="Client Secret">
               {!editPlatformDetails ? (
-                <p style={{ padding: 0, margin: 0 }}>{clientSecret}</p>
+                <Text style={{ fontSize: "18px" }}>
+                  {anonymizeClientSecret(clientSecret)}
+                </Text>
               ) : (
-                <input
-                  style={{ width: "400px" }}
-                  type="password"
+                <Input
+                  style={{ width: "100%" }}
                   value={clientSecret}
                   onChange={(e) => setClientSecret(e.target.value)}
                 />
               )}
-            </label>
-          </div>
-          <button
-            type="button"
-            onClick={handleSaveCredntials}
-            style={{ width: "10rem" }}
-          >
-            {editPlatformDetails ? "Save" : "Edit"}
-          </button>
-          <button
-            type="button"
-            onClick={authenticate}
-            style={{ width: "10rem" }}
-          >
-            Authenticate
-          </button>
-        </form>
+            </Form.Item>
+            <Space>
+              <Button
+                type={editPlatformDetails ? "primary" : "default"}
+                onClick={handleSaveCredentials}
+                size="large"
+              >
+                {editPlatformDetails ? "Save" : "Edit"}
+              </Button>
+              <Button
+                type={
+                  authenticated || editPlatformDetails ? "default" : "primary"
+                }
+                onClick={authenticate}
+                size="large"
+              >
+                {authenticated ? "Refresh" : "Authenticate"}
+              </Button>
+              <Button
+                type="danger"
+                onClick={handleDeletePlatform}
+                size="large"
+                loading={deletePlatformIsLoading}
+              >
+                Delete
+              </Button>
+            </Space>
+            {deletePlatformIsError && (
+              <Text type="danger">Error deleting platform</Text>
+            )}
+          </Form>
+        </div>
       </div>
 
-      <div style={{ paddingTop: 20, paddingBottom: 20, width: "50%" }}>
-        <h3>Platforms</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {platforms.map((platform, index) => (
-            <button key={index} onClick={() => handleSelectPlatform(index)}>
-              {platform.platformUrl}
-            </button>
-          ))}
+      <div style={{ paddingTop: 20, paddingBottom: 20 }}>
+        <Title level={3} style={{ fontSize: "24px" }}>
+          Platforms
+        </Title>
+        <div style={sectionStyle}>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            {platforms?.map((platform, index) => (
+              <Button
+                key={index}
+                onClick={() => handleSelectPlatform(index)}
+                size="large"
+                style={{ width: "100%" }}
+              >
+                {platform.platformUrl}
+              </Button>
+            ))}
+          </Space>
         </div>
       </div>
     </div>

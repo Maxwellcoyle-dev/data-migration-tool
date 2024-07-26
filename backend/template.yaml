@@ -77,6 +77,27 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref AccessTokensTable
 
+  DeletePlatformFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/delete-platform/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        DeletePlatform:
+          Type: Api
+          Properties:
+            Path: /delete-platform
+            Method: DELETE
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AccessTokensTable
+      Environment:
+        Variables:
+          ACCESS_TOKEN_TABLE_NAME: AccessTokens
+
   # -----
 
   # Data Migration Resources
