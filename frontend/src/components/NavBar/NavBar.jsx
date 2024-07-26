@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Image, Layout, Menu, Typography } from "antd";
+import { Image, Layout, Menu, Typography, Popconfirm, Button } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
   FileTextOutlined,
-  LoginOutlined,
+  SafetyOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import logo from "../../assets/trainicity-logo.png";
 import styles from "./NavBar.module.css";
@@ -50,13 +51,13 @@ const NavBar = ({ domain, authenticated }) => {
               Logs
             </Link>
           </Menu.Item>
-          <Menu.Item key="/authentication" icon={<LoginOutlined />}>
+          <Menu.Item key="/authentication" icon={<SafetyOutlined />}>
             <Link to="/authentication" className={styles.menuItem}>
               Authenticate
             </Link>
           </Menu.Item>
         </Menu>
-        <div className={styles.domainStatus}>
+        <div className={styles.status}>
           <Text
             // onclick open up a new tab with the domain
             onClick={() => window.open(`https://${domain}`, "_blank")}
@@ -65,6 +66,15 @@ const NavBar = ({ domain, authenticated }) => {
           >
             {domain}
           </Text>
+          <Popconfirm
+            title="Log out of the app?"
+            description="Are you sure to log out?"
+            okText="Yes"
+            cancelText="No"
+            placement="bottomLeft"
+          >
+            <Button danger icon={<LogoutOutlined />}></Button>
+          </Popconfirm>
         </div>
       </Header>
     </Layout>

@@ -25,9 +25,9 @@
   font-size: 0.8rem;
 }
 
-.domainStatus {
-  color: #1890ff;
-  font-size: 1rem; /* Increased font size for domain text */
+.status {
+  display: flex;
+  gap: 1rem;
 }
 
 .domainText {

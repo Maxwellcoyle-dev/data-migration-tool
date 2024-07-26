@@ -45,8 +45,12 @@ const Authentication = ({ user }) => {
   });
 
   useEffect(() => {
-    if (domain === "" && clientId === "" && clientSecret === "") {
+    if (domain === "") {
       setEditPlatformDetails(true);
+    }
+
+    if (currentPlatformInfo.domain !== "") {
+      setEditPlatformDetails(false);
     }
   }, [domain, clientId, clientSecret]);
 
