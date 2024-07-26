@@ -1,54 +1,71 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-
+import { Image, Layout, Menu, Typography } from "antd";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  HomeOutlined,
+  FileTextOutlined,
+  LoginOutlined,
+} from "@ant-design/icons";
+import logo from "../../assets/trainicity-logo.png";
 import styles from "./NavBar.module.css";
+
+const { Header } = Layout;
+const { Text } = Typography;
 
 const NavBar = ({ domain, authenticated }) => {
   const [path, setPath] = useState("");
-
   const { pathname } = useLocation();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     setPath(pathname);
   }, [pathname]);
 
   return (
-    <div
-      style={{
-        padding: "1rem 3rem",
-        margin: 0,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#f0f0f0",
-      }}
-    >
-      <div className={styles.mainNavDiv}>
-        <Link
-          className={path === "/" ? styles.selectedNavItem : styles.navItem}
-          to="/"
+    <Layout>
+      <Header className={styles.navHeader}>
+        <div className={styles.logo}>
+          <Image
+            src={logo}
+            alt="logo"
+            preview={false}
+            className={styles.logoImage}
+            onClick={() => navigate("/")}
+          />
+        </div>
+        <Menu
+          theme="light"
+          mode="horizontal"
+          selectedKeys={[path]}
+          style={{ flex: 1, display: "flex", justifyContent: "center" }}
         >
-          Home
-        </Link>
-        <Link
-          className={path === "/logs" ? styles.selectedNavItem : styles.navItem}
-          to="/logs"
-        >
-          Logs
-        </Link>
-      </div>
-      <div style={{ color: authenticated ? "green" : "red" }}>{domain}</div>
-      <div>
-        <Link
-          className={
-            path === "/authentication" ? styles.selectedNavItem : styles.navItem
-          }
-          to="/authentication"
-        >
-          Authenticate
-        </Link>
-      </div>
-    </div>
+          <Menu.Item key="/" icon={<HomeOutlined />}>
+            <Link to="/" className={styles.menuItem}>
+              Home
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/logs" icon={<FileTextOutlined />}>
+            <Link to="/logs" className={styles.menuItem}>
+              Logs
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/authentication" icon={<LoginOutlined />}>
+            <Link to="/authentication" className={styles.menuItem}>
+              Authenticate
+            </Link>
+          </Menu.Item>
+        </Menu>
+        <div className={styles.domainStatus}>
+          <Text
+            type={authenticated ? "success" : "danger"}
+            className={styles.domainText}
+          >
+            {domain}
+          </Text>
+        </div>
+      </Header>
+    </Layout>
   );
 };
 

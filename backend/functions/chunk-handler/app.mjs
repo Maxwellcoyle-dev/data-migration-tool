@@ -6,6 +6,7 @@ import nonBatchDoceboImport from "./utils/nonBatchDoceboImport.mjs";
 import addLogsToS3 from "./utils/addLogsToS3.mjs";
 import addLogToTable from "./utils/AddLogToTable.mjs";
 import updateImportTable from "./utils/updateImportTable.mjs";
+import handleErrors from "./utils/handlePendingImports.mjs";
 
 export const handler = async (event) => {
   console.log("Event received:", event);
@@ -89,6 +90,7 @@ export const handler = async (event) => {
       const data = await sqs.send(new DeleteMessageCommand(deleteParams));
       console.log("Delete message response:", data);
     } catch (error) {
+      handleErrors(error, importId);
       console.error("Error processing message:", error);
     }
   }

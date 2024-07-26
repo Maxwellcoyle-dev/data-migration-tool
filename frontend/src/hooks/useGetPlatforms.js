@@ -13,15 +13,19 @@ const useGetPlatforms = ({ userId }) => {
     );
   };
 
-  const { data, error, loading } = useQuery({
+  const {
+    data,
+    error: platformsError,
+    isLoading: platformIsLoading,
+  } = useQuery({
     queryKey: ["platforms"],
     queryFn: fetchPlatforms,
   });
 
   return {
     platforms: data?.data,
-    error,
-    loading,
+    platformIsLoading,
+    platformsError,
   };
 };
 

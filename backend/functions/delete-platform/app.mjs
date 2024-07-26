@@ -3,7 +3,6 @@ import { DynamoDBClient, DeleteItemCommand } from "@aws-sdk/client-dynamodb";
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 
 export const handler = async (event) => {
-y
   // handle preflight request
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -25,7 +24,6 @@ y
     return {
       statusCode: 400,
       headers: {
-        "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "DELETE,OPTIONS",
@@ -50,7 +48,6 @@ y
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "DELETE,OPTIONS",
@@ -62,7 +59,6 @@ y
     return {
       statusCode: 500,
       headers: {
-        "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "DELETE,OPTIONS",

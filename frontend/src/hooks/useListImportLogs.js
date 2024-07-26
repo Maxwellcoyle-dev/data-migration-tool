@@ -25,6 +25,7 @@ const useListImportLogs = () => {
       const response = await axios.get(
         `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/list-imports?userId=${user.userId}`
       );
+      console.log("response", response.data);
       return response.data;
     },
     enabled: !!user?.userId,

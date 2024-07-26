@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Typography, Space } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  Typography,
+  Space,
+  Popconfirm,
+  Spin,
+  notification,
+  Alert,
+} from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import useGetPlatforms from "../hooks/useGetPlatforms";
 import useDeletePlatform from "../hooks/useDeletePlatform";
 import { useAppContext } from "../context/appContext";
@@ -12,34 +23,74 @@ const Authentication = ({ user }) => {
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
 
-  const { setCurrentPlatformInfo, setAuthenticated, authenticated } =
-    useAppContext();
-
-  const { platforms } = useGetPlatforms({ userId: user.userId });
+  const {
+    setCurrentPlatformInfo,
+    currentPlatformInfo,
+    setAuthenticated,
+    authenticated,
+  } = useAppContext();
+  const { platforms, platformIsLoading, platformsError } = useGetPlatforms({
+    userId: user.userId,
+  });
 
   const {
     deletePlatformMutation,
+    deletePlatformIsSuccess,
     deletePlatformIsLoading,
     deletePlatformIsError,
   } = useDeletePlatform();
 
-  const handleSaveCredentials = () => {
-    setEditPlatformDetails(!editPlatformDetails);
-    setCurrentPlatformInfo({ domain, clientId, clientSecret });
-  };
+  useEffect(() => {
+    console.log("delete is loading: ", deletePlatformIsLoading);
+  });
 
-  const handleDeletePlatform = () => {
-    deletePlatformMutation({ platformDomain: domain });
-  };
+  useEffect(() => {
+    if (domain === "" && clientId === "" && clientSecret === "") {
+      setEditPlatformDetails(true);
+    }
+  }, [domain, clientId, clientSecret]);
 
   useEffect(() => {
     if (platforms?.length) {
       const platform = platforms[0];
+      setCurrentPlatformInfo({
+        domain: platform.platformUrl,
+        clientId: platform.clientId,
+        clientSecret: platform.clientSecret,
+      });
+
       setDomain(platform.platformUrl);
       setClientId(platform.clientId);
       setClientSecret(platform.clientSecret);
     }
   }, [platforms]);
+
+  useEffect(() => {
+    if (deletePlatformIsSuccess) {
+      notification.success({
+        message: "Success",
+        description: "Platform deleted successfully.",
+      });
+      setDomain("");
+      setClientId("");
+      setClientSecret("");
+    }
+    if (deletePlatformIsError) {
+      notification.error({
+        message: "Error",
+        description: "Failed to delete platform. Please try again.",
+      });
+    }
+  }, [deletePlatformIsSuccess, deletePlatformIsError]);
+
+  const handleSaveCredentials = () => {
+    setCurrentPlatformInfo({ domain, clientId, clientSecret });
+    setEditPlatformDetails(!editPlatformDetails);
+  };
+
+  const handleDeletePlatform = () => {
+    deletePlatformMutation({ platformDomain: domain });
+  };
 
   const authenticate = () => {
     console.log("Authenticate", clientId, domain, clientSecret);
@@ -78,12 +129,27 @@ const Authentication = ({ user }) => {
     }
   };
 
+  const handleNewPlatform = () => {
+    setDomain("");
+    setClientId("");
+    setClientSecret("");
+    setCurrentPlatformInfo({ domain: "", clientId: "", clientSecret: "" });
+    setEditPlatformDetails(true);
+  };
+
   const anonymizeClientSecret = (secret) => {
     return secret.replace(/.(?=.{4})/g, "*");
   };
 
-  const sectionStyle = {
+  const authenticatorSectionStyle = {
     border: `1px dashed ${authenticated ? "lightgreen" : "red"}`,
+    borderRadius: "8px",
+    padding: "20px",
+    marginBottom: "20px",
+  };
+
+  const sectionStyle = {
+    border: `1px dashed charcoal`,
     borderRadius: "8px",
     padding: "20px",
     marginBottom: "20px",
@@ -91,11 +157,30 @@ const Authentication = ({ user }) => {
 
   return (
     <div style={{ padding: "0 3rem" }}>
-      <div style={{ paddingTop: 20, paddingBottom: 20 }}>
+      <div
+        style={{
+          paddingTop: 20,
+          paddingBottom: 20,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Title level={3} style={{ fontSize: "24px" }}>
           Authenticate with Docebo
         </Title>
-        <div style={sectionStyle}>
+        <Button onClick={handleNewPlatform} type="dashed" size="large">
+          + New Platform
+        </Button>
+      </div>
+      <Spin
+        spinning={
+          deletePlatformIsLoading === undefined
+            ? false
+            : deletePlatformIsLoading
+        }
+      >
+        <div style={authenticatorSectionStyle}>
           <Form layout="vertical" size="large">
             <Form.Item label="Domain">
               {!editPlatformDetails ? (
@@ -132,56 +217,72 @@ const Authentication = ({ user }) => {
                 />
               )}
             </Form.Item>
-            <Space>
-              <Button
-                type={editPlatformDetails ? "primary" : "default"}
-                onClick={handleSaveCredentials}
-                size="large"
+            <Space style={{ justifyContent: "space-between", width: "100%" }}>
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <Button
+                  type={editPlatformDetails ? "primary" : "default"}
+                  onClick={handleSaveCredentials}
+                  size="large"
+                >
+                  {editPlatformDetails ? "Save" : "Edit"}
+                </Button>
+                <Button
+                  type={
+                    authenticated || editPlatformDetails ? "default" : "primary"
+                  }
+                  disabled={
+                    currentPlatformInfo.domain === "" ||
+                    currentPlatformInfo.clientId === "" ||
+                    currentPlatformInfo.clientSecret === "" ||
+                    editPlatformDetails
+                  }
+                  onClick={authenticate}
+                  size="large"
+                >
+                  {authenticated ? "Refresh" : "Authenticate"}
+                </Button>
+              </div>
+              <Popconfirm
+                title="Are you sure you want to delete this platform?"
+                onConfirm={handleDeletePlatform}
+                okText="Yes"
+                cancelText="No"
               >
-                {editPlatformDetails ? "Save" : "Edit"}
-              </Button>
-              <Button
-                type={
-                  authenticated || editPlatformDetails ? "default" : "primary"
-                }
-                onClick={authenticate}
-                size="large"
-              >
-                {authenticated ? "Refresh" : "Authenticate"}
-              </Button>
-              <Button
-                type="danger"
-                onClick={handleDeletePlatform}
-                size="large"
-                loading={deletePlatformIsLoading}
-              >
-                Delete
-              </Button>
+                <Button
+                  danger
+                  disabled={currentPlatformInfo}
+                  icon={<DeleteOutlined />}
+                  size="large"
+                />
+              </Popconfirm>
             </Space>
-            {deletePlatformIsError && (
-              <Text type="danger">Error deleting platform</Text>
-            )}
           </Form>
         </div>
-      </div>
+      </Spin>
 
       <div style={{ paddingTop: 20, paddingBottom: 20 }}>
         <Title level={3} style={{ fontSize: "24px" }}>
           Platforms
         </Title>
         <div style={sectionStyle}>
-          <Space direction="vertical" style={{ width: "100%" }}>
-            {platforms?.map((platform, index) => (
-              <Button
-                key={index}
-                onClick={() => handleSelectPlatform(index)}
-                size="large"
-                style={{ width: "100%" }}
-              >
-                {platform.platformUrl}
-              </Button>
-            ))}
-          </Space>
+          {platformIsLoading && <Spin />}
+          {platformsError && (
+            <Alert message="Error" description={platformsError} type="error" />
+          )}
+          {platforms?.length > 0 && (
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {platforms?.map((platform, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleSelectPlatform(index)}
+                  size="large"
+                  style={{ width: "100%" }}
+                >
+                  {platform.platformUrl}
+                </Button>
+              ))}
+            </Space>
+          )}
         </div>
       </div>
     </div>
