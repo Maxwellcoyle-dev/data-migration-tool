@@ -7,17 +7,26 @@ import {
   SafetyOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+
+import { useAppContext } from "../../context/appContext";
 import logo from "../../assets/trainicity-logo.png";
 import styles from "./NavBar.module.css";
 
 const { Header } = Layout;
 const { Text } = Typography;
 
-const NavBar = ({ domain, authenticated, signOut }) => {
+const NavBar = ({ signOut }) => {
   const [path, setPath] = useState("");
   const { pathname } = useLocation();
 
   const navigate = useNavigate();
+
+  const {
+    currentPlatformInfo,
+    setCurrentPlatformInfo,
+    authenticated,
+    setAuthenticated,
+  } = useAppContext();
 
   useEffect(() => {
     setPath(pathname);
@@ -65,11 +74,13 @@ const NavBar = ({ domain, authenticated, signOut }) => {
         <div className={styles.status}>
           <Text
             // onclick open up a new tab with the domain
-            onClick={() => window.open(`https://${domain}`, "_blank")}
+            onClick={() =>
+              window.open(`https://${currentPlatformInfo.domain}`, "_blank")
+            }
             type={authenticated ? "success" : "danger"}
             className={styles.domainText}
           >
-            {domain}
+            {currentPlatformInfo.domain}
           </Text>
           <Popconfirm
             title="Confirm"

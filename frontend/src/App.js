@@ -59,11 +59,7 @@ const App = ({ user, signOut }) => {
   return (
     <ResponseLogProvider>
       <div>
-        <NavBar
-          domain={currentPlatformInfo.domain}
-          authenticated={authenticated}
-          signOut={signOut}
-        />
+        <NavBar signOut={signOut} />
         <Routes>
           <Route
             index
