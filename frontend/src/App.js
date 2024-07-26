@@ -17,17 +17,17 @@ import useListImportLogs from "./hooks/useListImportLogs.js";
 
 // context
 import { ResponseLogProvider } from "./context/responseLogContext";
+import { useAppContext } from "./context/appContext";
 
 const App = ({ user }) => {
-  const [currentPlatformInfo, setCurrentPlatformInfo] = useState({
-    domain: "",
-    clientId: "",
-    clientSecret: "",
-  });
-
-  const [authenticated, setAuthenticated] = useState(false);
-
   const { platforms } = useGetPlatforms({ userId: user.userId });
+
+  const {
+    currentPlatformInfo,
+    setCurrentPlatformInfo,
+    authenticated,
+    setAuthenticated,
+  } = useAppContext();
 
   const { logsList } = useListImportLogs();
   useEffect(() => {
@@ -75,14 +75,7 @@ const App = ({ user }) => {
           <Route path="/log/:id" element={<Log />} />
           <Route
             path="/authentication"
-            element={
-              <Authentication
-                user={user}
-                setCurrentPlatformInfo={setCurrentPlatformInfo}
-                authenticated={authenticated}
-                setAuthenticated={setAuthenticated}
-              />
-            }
+            element={<Authentication user={user} />}
           />
           <Route path="/callback" element={<Callback />} />
         </Routes>

@@ -5,6 +5,8 @@ import { Authenticator } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
+import { AppProvider } from "./context/appContext";
+
 import App from "./App";
 import "./global.css";
 
@@ -21,11 +23,13 @@ root.render(
   <Authenticator>
     {({ signOut, user }) => (
       <QueryClientProvider client={queryClient}>
-        <React.StrictMode>
-          <BrowserRouter>
-            <App user={user} />
-          </BrowserRouter>
-        </React.StrictMode>
+        <AppProvider>
+          <React.StrictMode>
+            <BrowserRouter>
+              <App user={user} />
+            </BrowserRouter>
+          </React.StrictMode>
+        </AppProvider>
       </QueryClientProvider>
     )}
   </Authenticator>
