@@ -8,6 +8,7 @@ import {
   Popconfirm,
   Spin,
   notification,
+  Alert,
 } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import useGetPlatforms from "../hooks/useGetPlatforms";
@@ -28,7 +29,9 @@ const Authentication = ({ user }) => {
     setAuthenticated,
     authenticated,
   } = useAppContext();
-  const { platforms } = useGetPlatforms({ userId: user.userId });
+  const { platforms, platformIsLoading, platformsError } = useGetPlatforms({
+    userId: user.userId,
+  });
 
   const {
     deletePlatformMutation,
@@ -262,18 +265,24 @@ const Authentication = ({ user }) => {
           Platforms
         </Title>
         <div style={sectionStyle}>
-          <Space direction="vertical" style={{ width: "100%" }}>
-            {platforms?.map((platform, index) => (
-              <Button
-                key={index}
-                onClick={() => handleSelectPlatform(index)}
-                size="large"
-                style={{ width: "100%" }}
-              >
-                {platform.platformUrl}
-              </Button>
-            ))}
-          </Space>
+          {platformIsLoading && <Spin />}
+          {platformsError && (
+            <Alert message="Error" description={platformsError} type="error" />
+          )}
+          {platforms?.length > 0 && (
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {platforms?.map((platform, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleSelectPlatform(index)}
+                  size="large"
+                  style={{ width: "100%" }}
+                >
+                  {platform.platformUrl}
+                </Button>
+              ))}
+            </Space>
+          )}
         </div>
       </div>
     </div>

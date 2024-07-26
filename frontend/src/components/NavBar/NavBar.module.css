@@ -1,14 +1,34 @@
-.mainNavDiv {
+.navHeader {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  padding: 0 24px;
+  background: #fff;
 }
 
-.navItem {
-  text-decoration: none;
-  color: black;
+.logo {
+  display: flex;
+  align-items: center;
+  margin-right: 24px;
 }
 
-.selectedNavItem {
-  text-decoration: none;
-  color: blue;
+.logoImage {
+  max-width: 8rem; /* Increased size for better visibility */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.ant-menu-item {
+  font-size: 1rem;
+}
+
+.menuItem {
+  font-size: 0.8rem;
+}
+
+.domainStatus {
+  color: #1890ff;
+  font-size: 1rem; /* Increased font size for domain text */
+}
+
+.domainText {
+  font-size: 1rem; /* Increased font size for domain text */
 }
