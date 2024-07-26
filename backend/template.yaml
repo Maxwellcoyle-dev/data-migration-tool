@@ -90,7 +90,7 @@ Resources:
           Type: Api
           Properties:
             Path: /delete-platform
-            Method: DELETE
+            Method: POST
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref AccessTokensTable

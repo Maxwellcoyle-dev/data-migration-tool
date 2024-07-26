@@ -27,18 +27,10 @@ const useDeletePlatform = () => {
     mutationFn: async ({ platformDomain }) => {
       try {
         console.log("platformDomain", platformDomain);
-        const response = await axios.delete(
-          `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/delete-platform`,
-          {
-            params: {
-              userId: user.userId,
-              domain: platformDomain,
-            },
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+        const response = await axios.post(
+          `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/delete-platform?userId=${user.userId}&domain=${platformDomain}`
         );
+        console.log("response", response);
         return response.data;
       } catch (error) {
         console.error("Error in deleting platform:", error);
