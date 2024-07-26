@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Image, Layout, Menu, Typography } from "antd";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
   FileTextOutlined,
@@ -16,6 +16,8 @@ const NavBar = ({ domain, authenticated }) => {
   const [path, setPath] = useState("");
   const { pathname } = useLocation();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     setPath(pathname);
   }, [pathname]);
@@ -29,6 +31,7 @@ const NavBar = ({ domain, authenticated }) => {
             alt="logo"
             preview={false}
             className={styles.logoImage}
+            onClick={() => navigate("/")}
           />
         </div>
         <Menu
