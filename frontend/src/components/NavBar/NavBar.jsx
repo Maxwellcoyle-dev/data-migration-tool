@@ -1,26 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { Image, Layout, Menu, Typography } from "antd";
+import { Image, Layout, Menu, Typography, Popconfirm, Button } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
   FileTextOutlined,
-  LoginOutlined,
+  SafetyOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
+
+import { useAppContext } from "../../context/appContext";
 import logo from "../../assets/trainicity-logo.png";
 import styles from "./NavBar.module.css";
 
 const { Header } = Layout;
 const { Text } = Typography;
 
-const NavBar = ({ domain, authenticated }) => {
+const NavBar = ({ signOut }) => {
   const [path, setPath] = useState("");
   const { pathname } = useLocation();
 
   const navigate = useNavigate();
 
+  const {
+    currentPlatformInfo,
+    setCurrentPlatformInfo,
+    authenticated,
+    setAuthenticated,
+  } = useAppContext();
+
   useEffect(() => {
     setPath(pathname);
   }, [pathname]);
+
+  const onConfirmSignout = () => {
+    signOut();
+    navigate("/");
+  };
 
   return (
     <Layout>
@@ -50,21 +65,33 @@ const NavBar = ({ domain, authenticated }) => {
               Logs
             </Link>
           </Menu.Item>
-          <Menu.Item key="/authentication" icon={<LoginOutlined />}>
+          <Menu.Item key="/authentication" icon={<SafetyOutlined />}>
             <Link to="/authentication" className={styles.menuItem}>
               Authenticate
             </Link>
           </Menu.Item>
         </Menu>
-        <div className={styles.domainStatus}>
+        <div className={styles.status}>
           <Text
             // onclick open up a new tab with the domain
-            onClick={() => window.open(`https://${domain}`, "_blank")}
+            onClick={() =>
+              window.open(`https://${currentPlatformInfo.domain}`, "_blank")
+            }
             type={authenticated ? "success" : "danger"}
             className={styles.domainText}
           >
-            {domain}
+            {currentPlatformInfo.domain}
           </Text>
+          <Popconfirm
+            title="Confirm"
+            description="Are you sure to log out?"
+            okText="Yes"
+            cancelText="No"
+            placement="bottomLeft"
+            onConfirm={onConfirmSignout}
+          >
+            <Button danger icon={<LogoutOutlined />}></Button>
+          </Popconfirm>
         </div>
       </Header>
     </Layout>

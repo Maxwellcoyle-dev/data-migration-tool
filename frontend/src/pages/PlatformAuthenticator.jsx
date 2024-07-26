@@ -17,7 +17,7 @@ import { useAppContext } from "../context/appContext";
 
 const { Title, Text } = Typography;
 
-const Authentication = ({ user }) => {
+const PlatformAuthenticator = ({ user }) => {
   const [editPlatformDetails, setEditPlatformDetails] = useState(false);
   const [domain, setDomain] = useState("");
   const [clientId, setClientId] = useState("");
@@ -45,8 +45,12 @@ const Authentication = ({ user }) => {
   });
 
   useEffect(() => {
-    if (domain === "" && clientId === "" && clientSecret === "") {
+    if (domain === "") {
       setEditPlatformDetails(true);
+    }
+
+    if (currentPlatformInfo.domain !== "") {
+      setEditPlatformDetails(false);
     }
   }, [domain, clientId, clientSecret]);
 
@@ -289,4 +293,4 @@ const Authentication = ({ user }) => {
   );
 };
 
-export default Authentication;
+export default PlatformAuthenticator;

@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 
 // Pages
 import Home from "./pages/Home";
-import Authentication from "./pages/Authentication";
+import PlatformAuthenticator from "./pages/PlatformAuthenticator.jsx";
 import LogsPage from "./pages/LogsPage/LogsPage.jsx";
 import Log from "./pages/Log/Log";
 
@@ -19,7 +19,7 @@ import useListImportLogs from "./hooks/useListImportLogs.js";
 import { ResponseLogProvider } from "./context/responseLogContext";
 import { useAppContext } from "./context/appContext";
 
-const App = ({ user }) => {
+const App = ({ user, signOut }) => {
   const { platforms } = useGetPlatforms({ userId: user.userId });
 
   const {
@@ -59,10 +59,7 @@ const App = ({ user }) => {
   return (
     <ResponseLogProvider>
       <div>
-        <NavBar
-          domain={currentPlatformInfo.domain}
-          authenticated={authenticated}
-        />
+        <NavBar signOut={signOut} />
         <Routes>
           <Route
             index
@@ -75,7 +72,7 @@ const App = ({ user }) => {
           <Route path="/log/:id" element={<Log />} />
           <Route
             path="/authentication"
-            element={<Authentication user={user} />}
+            element={<PlatformAuthenticator user={user} />}
           />
           <Route path="/callback" element={<Callback />} />
         </Routes>
