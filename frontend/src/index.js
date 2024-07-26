@@ -26,7 +26,7 @@ root.render(
         <AppProvider>
           <React.StrictMode>
             <BrowserRouter>
-              <App user={user} />
+              <App user={user} signOut={signOut} />
             </BrowserRouter>
           </React.StrictMode>
         </AppProvider>

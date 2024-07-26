@@ -13,7 +13,7 @@ import styles from "./NavBar.module.css";
 const { Header } = Layout;
 const { Text } = Typography;
 
-const NavBar = ({ domain, authenticated }) => {
+const NavBar = ({ domain, authenticated, signOut }) => {
   const [path, setPath] = useState("");
   const { pathname } = useLocation();
 
@@ -22,6 +22,11 @@ const NavBar = ({ domain, authenticated }) => {
   useEffect(() => {
     setPath(pathname);
   }, [pathname]);
+
+  const onConfirmSignout = () => {
+    signOut();
+    navigate("/");
+  };
 
   return (
     <Layout>
@@ -67,11 +72,12 @@ const NavBar = ({ domain, authenticated }) => {
             {domain}
           </Text>
           <Popconfirm
-            title="Log out of the app?"
+            title="Confirm"
             description="Are you sure to log out?"
             okText="Yes"
             cancelText="No"
             placement="bottomLeft"
+            onConfirm={onConfirmSignout}
           >
             <Button danger icon={<LogoutOutlined />}></Button>
           </Popconfirm>

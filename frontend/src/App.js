@@ -19,7 +19,7 @@ import useListImportLogs from "./hooks/useListImportLogs.js";
 import { ResponseLogProvider } from "./context/responseLogContext";
 import { useAppContext } from "./context/appContext";
 
-const App = ({ user }) => {
+const App = ({ user, signOut }) => {
   const { platforms } = useGetPlatforms({ userId: user.userId });
 
   const {
@@ -62,6 +62,7 @@ const App = ({ user }) => {
         <NavBar
           domain={currentPlatformInfo.domain}
           authenticated={authenticated}
+          signOut={signOut}
         />
         <Routes>
           <Route
