@@ -7,11 +7,26 @@ const awsmobile = {
     "aws_cognito_region": "us-east-2",
     "aws_user_pools_id": "us-east-2_nBIcbqukb",
     "aws_user_pools_web_client_id": "7ejfnpn65ke5hnetjr3q01m9v7",
-    "oauth": {},
+    "oauth": {
+        "domain": "trainicity-data-migration-dev.auth.us-east-2.amazoncognito.com",
+        "scope": [
+            "phone",
+            "email",
+            "openid",
+            "profile",
+            "aws.cognito.signin.user.admin"
+        ],
+        "redirectSignIn": "https://migration.trainicity.com/,http://localhost:3000/",
+        "redirectSignOut": "http://localhost:3000/,https://migration.trainicity.com/",
+        "responseType": "code"
+    },
+    "federationTarget": "COGNITO_USER_POOLS",
     "aws_cognito_username_attributes": [
         "EMAIL"
     ],
-    "aws_cognito_social_providers": [],
+    "aws_cognito_social_providers": [
+        "GOOGLE"
+    ],
     "aws_cognito_signup_attributes": [
         "EMAIL"
     ],

@@ -11,6 +11,7 @@ import "./global.css";
 
 import awsExports from "./aws-exports";
 import "@aws-amplify/ui-react/styles.css";
+import { AuthStyle } from "./AuthStyle"; // Import the AuthStyle component
 
 Amplify.configure(awsExports);
 
@@ -21,10 +22,7 @@ const components = {
     const { tokens } = useTheme();
     return (
       <View textAlign="center" padding={tokens.space.large}>
-        <Image
-          alt="Trainicity Logo"
-          src={logo} // Replace with your logo path
-        />
+        <Image alt="Trainicity Logo" src={logo} />
       </View>
     );
   },
@@ -32,17 +30,19 @@ const components = {
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <Authenticator components={components}>
-    {({ signOut, user }) => (
-      <QueryClientProvider client={queryClient}>
-        <AppProvider>
-          <React.StrictMode>
-            <BrowserRouter>
-              <App user={user} signOut={signOut} />
-            </BrowserRouter>
-          </React.StrictMode>
-        </AppProvider>
-      </QueryClientProvider>
-    )}
-  </Authenticator>
+  <AuthStyle>
+    <Authenticator components={components}>
+      {({ signOut, user }) => (
+        <QueryClientProvider client={queryClient}>
+          <AppProvider>
+            <React.StrictMode>
+              <BrowserRouter>
+                <App user={user} signOut={signOut} />
+              </BrowserRouter>
+            </React.StrictMode>
+          </AppProvider>
+        </QueryClientProvider>
+      )}
+    </Authenticator>
+  </AuthStyle>
 );
