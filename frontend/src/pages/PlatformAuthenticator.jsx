@@ -17,7 +17,7 @@ import { useAppContext } from "../context/appContext";
 
 const { Title, Text } = Typography;
 
-const Authentication = ({ user }) => {
+const PlatformAuthenticator = ({ user }) => {
   const [editPlatformDetails, setEditPlatformDetails] = useState(false);
   const [domain, setDomain] = useState("");
   const [clientId, setClientId] = useState("");
@@ -293,4 +293,4 @@ const Authentication = ({ user }) => {
   );
 };
 
-export default Authentication;
+export default PlatformAuthenticator;

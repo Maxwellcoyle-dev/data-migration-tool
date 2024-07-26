@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 
 // Pages
 import Home from "./pages/Home";
-import Authentication from "./pages/Authentication";
+import PlatformAuthenticator from "./pages/PlatformAuthenticator.jsx";
 import LogsPage from "./pages/LogsPage/LogsPage.jsx";
 import Log from "./pages/Log/Log";
 
@@ -72,7 +72,7 @@ const App = ({ user, signOut }) => {
           <Route path="/log/:id" element={<Log />} />
           <Route
             path="/authentication"
-            element={<Authentication user={user} />}
+            element={<PlatformAuthenticator user={user} />}
           />
           <Route path="/callback" element={<Callback />} />
         </Routes>
