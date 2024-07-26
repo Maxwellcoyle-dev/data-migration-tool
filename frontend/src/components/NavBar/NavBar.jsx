@@ -58,6 +58,8 @@ const NavBar = ({ domain, authenticated }) => {
         </Menu>
         <div className={styles.domainStatus}>
           <Text
+            // onclick open up a new tab with the domain
+            onClick={() => window.open(`https://${domain}`, "_blank")}
             type={authenticated ? "success" : "danger"}
             className={styles.domainText}
           >

@@ -32,4 +32,5 @@
 
 .domainText {
   font-size: 1rem; /* Increased font size for domain text */
+  cursor: pointer;
 }
