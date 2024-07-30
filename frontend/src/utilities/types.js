@@ -3,6 +3,7 @@ import { enrollments } from "./types/enrollments";
 import { catalogs } from "./types/catalogs";
 import { branches } from "./types/branches";
 import { groups } from "./types/groups";
+import { learningObjects } from "./types/learningObjects";
 
 const types = (type) => {
   switch (type) {
@@ -16,6 +17,8 @@ const types = (type) => {
       return branches;
     case "groups":
       return groups;
+    case "learning_objects":
+      return learningObjects;
     default:
       return {};
   }

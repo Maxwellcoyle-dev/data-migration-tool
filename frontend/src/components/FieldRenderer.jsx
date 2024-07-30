@@ -1,31 +1,50 @@
 import React from "react";
-import { Collapse, Table, Typography } from "antd";
+import { Collapse, Table, Typography, Button } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const { Panel } = Collapse;
 const { Title } = Typography;
 
-const FieldRenderer = ({ importType, fieldsVisible, typeFields }) => (
-  <Collapse
-    size="large"
-    style={{ border: "1px solid lightgray" }}
-    expandIconPosition="start"
-    defaultActiveKey={fieldsVisible ? ["1"] : []}
-  >
-    <Panel
-      header={
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <strong>{importType}</strong> fields
-        </div>
-      }
-      key="1"
+const FieldRenderer = ({ importType, fieldsVisible, typeFields }) => {
+  const handleDownload = () => {
+    const filePath = require(`../csv-templates/${importType}.csv`);
+    const link = document.createElement("a");
+    link.href = filePath;
+    link.download = `${importType}.csv`;
+    link.click();
+  };
+
+  return (
+    <Collapse
+      size="large"
+      style={{ border: "1px solid lightgray" }}
+      expandIconPosition="start"
+      defaultActiveKey={fieldsVisible ? ["1"] : []}
     >
-      <div style={{ marginTop: 10 }}>
-        {renderFields(typeFields.requiredFields, "Required Fields")}
-        {renderFields(typeFields.optionalFields, "Optional Fields")}
-      </div>
-    </Panel>
-  </Collapse>
-);
+      <Panel
+        header={
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <strong>{importType}</strong> fields
+          </div>
+        }
+        key="1"
+      >
+        <div style={{ marginTop: 10 }}>
+          <Button
+            type="dashed"
+            icon={<DownloadOutlined />}
+            onClick={handleDownload}
+            style={{ marginLeft: "auto" }}
+          >
+            Download CSV Template
+          </Button>
+          {renderFields(typeFields.requiredFields, "Required Fields")}
+          {renderFields(typeFields.optionalFields, "Optional Fields")}
+        </div>
+      </Panel>
+    </Collapse>
+  );
+};
 
 const renderFields = (fields, title) => (
   <div>

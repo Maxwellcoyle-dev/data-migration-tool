@@ -64,7 +64,14 @@ export const csvToJson = (csvData) => {
     stream
       .pipe(csv())
       .on("data", (data) => {
-        results.push(data);
+        // Sanitize each field to remove newline characters
+        const sanitizedData = {};
+        for (const key in data) {
+          if (data.hasOwnProperty(key)) {
+            sanitizedData[key] = data[key].replace(/\n/g, "").trim();
+          }
+        }
+        results.push(sanitizedData);
       })
       .on("end", () => {
         console.log("CSV parsing complete");

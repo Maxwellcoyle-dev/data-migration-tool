@@ -3,6 +3,11 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 const s3Client = new S3Client({ region: "us-east-2" });
 
 const addLogsToS3 = async (importId, chunkNumber, doceboResponse) => {
+  console.log("Adding logs to S3");
+  console.log("importId:", importId);
+  console.log("chunkNumber:", chunkNumber);
+  console.log("doceboResponse:", doceboResponse);
+
   const s3Params = {
     Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
     Key: `${importId}/chunk_${chunkNumber}.json`,

@@ -139,6 +139,49 @@ const validateCourseData = (data, importType) => {
   return errors;
 };
 
+const validateLearningObjectData = (data, importType) => {
+  const requiredFields = types(importType).requiredFields;
+  console.log("Data:", data);
+  console.log("Required Fields:", requiredFields);
+
+  const errors = [];
+  const headers = data[0];
+
+  if (!headers) {
+    errors.push("No headers found in the CSV file.");
+    return errors;
+  }
+
+  const fieldPresent = (fields) =>
+    fields.some((field) => headers.includes(field.field));
+
+  // Check if either course_code or course_id is present
+  const courseFieldPair = requiredFields.filter((field) =>
+    ["course_code", "course_id"].includes(field.field)
+  );
+  if (!fieldPresent(courseFieldPair)) {
+    errors.push(`Missing required field: either course_code or course_id`);
+  }
+
+  // Check for other required fields
+  const missingRequiredFields = requiredFields.filter((field) => {
+    if (["course_code", "course_id"].includes(field.field)) {
+      return false; // Already checked
+    }
+    return !headers.includes(field.field);
+  });
+
+  if (missingRequiredFields.length > 0) {
+    errors.push(
+      `Missing required fields: ${missingRequiredFields
+        .map((field) => field.field)
+        .join(", ")}`
+    );
+  }
+
+  return errors;
+};
+
 export const validateData = (data, importType) => {
   switch (importType) {
     case "branches":
@@ -151,6 +194,8 @@ export const validateData = (data, importType) => {
       return validateCatalogData(data, importType);
     case "enrollments":
       return validateEnrollmentData(data, importType);
+    case "learning_objects":
+      return validateLearningObjectData(data, importType);
     default:
       return [`Unknown import type: ${importType}`];
   }
