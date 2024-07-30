@@ -2,6 +2,7 @@ import catalogResponseMap from "./response-maps/catalogResponseMap.mjs";
 import courseResponseMap from "./response-maps/courseResponseMap.mjs";
 import branchResponseMap from "./response-maps/branchResponseMap.mjs";
 import enrollmentResponseMap from "./response-maps/enrollmentResponseMap.mjs";
+import learningObjectResponseMap from "./response-maps/learningObjectResponseMap.mjs";
 // import groupResponseMap from "./response-maps/groupResponseMap.mjs";
 
 const importTypes = {
@@ -29,6 +30,11 @@ const importTypes = {
     endpoint: "/audiences/v1/audience",
     method: "POST",
     // responseMapFunction: groupResponseMap,
+  },
+  learning_objects: {
+    endpoint: "/learn/v1/lo/batch",
+    method: "POST",
+    responseMapFunction: learningObjectResponseMap,
   },
 };
 

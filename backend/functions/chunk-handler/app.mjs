@@ -14,18 +14,21 @@ export const handler = async (event) => {
   const sqs = new SQSClient({ region: "us-east-2" });
 
   for (const record of event.Records) {
+    let importId;
     try {
       const body = JSON.parse(record.body);
       const {
         chunk,
         chunkCount,
         chunkNumber,
-        importId,
+        importId: importIdFromBody,
         userId,
         importType,
         importOptions,
         domain,
       } = body;
+
+      importId = importIdFromBody; // Ensure importId is set here
 
       console.log(
         "Processing chunk:",
@@ -75,6 +78,7 @@ export const handler = async (event) => {
         };
       }
 
+      console.log("importId", importId);
       // store logs in S3
       await addLogsToS3(importId, chunkNumber, doceboResponse);
 
@@ -90,7 +94,9 @@ export const handler = async (event) => {
       const data = await sqs.send(new DeleteMessageCommand(deleteParams));
       console.log("Delete message response:", data);
     } catch (error) {
-      handleErrors(error, importId);
+      if (importId) {
+        handleErrors(error, importId);
+      }
       console.error("Error processing message:", error);
     }
   }

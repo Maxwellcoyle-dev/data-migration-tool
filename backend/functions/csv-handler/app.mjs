@@ -16,6 +16,7 @@ import transformCourses from "./utils/transformCourses.mjs";
 import transformGroups from "./utils/tranformGroups.mjs";
 import transformBranches from "./utils/transformBranches.mjs";
 import transformEnrollments from "./utils/transformEnrollments.mjs";
+import transformLearningObjectData from "./utils/transformLearningObjects.mjs";
 
 const sqsClient = new SQSClient({ region: "us-east-2" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
@@ -58,6 +59,9 @@ export const handler = async (event) => {
       break;
     case "enrollments":
       importData = transformEnrollments(jsonData);
+      break;
+    case "learning_objects":
+      importData = transformLearningObjectData(jsonData);
       break;
     default:
       throw new Error("Invalid import type");

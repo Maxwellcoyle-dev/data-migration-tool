@@ -99,6 +99,12 @@ const Home = ({ currentPlatformInfo, user }) => {
   const handleSubmit = () => {
     const cleanedOptions = cleanOptions(importOptions);
 
+    console.log("cleanedOptions", cleanedOptions);
+    console.log("csvFile", csvFile);
+    console.log("user", user);
+    console.log("currentPlatformInfo", currentPlatformInfo);
+    console.log("importType", importType);
+
     const formData = new FormData();
     formData.append("file", csvFile);
     formData.append("options", JSON.stringify(cleanedOptions));

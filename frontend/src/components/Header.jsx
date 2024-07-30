@@ -4,7 +4,14 @@ import { Select, Typography } from "antd";
 const { Title } = Typography;
 const { Option } = Select;
 
-const types = ["courses", "enrollments", "catalogs", "branches", "groups"];
+const types = [
+  "courses",
+  "enrollments",
+  "catalogs",
+  "branches",
+  "groups",
+  "learning_objects",
+];
 
 const Header = ({ importType, handleImportTypeSelect }) => (
   <div>
