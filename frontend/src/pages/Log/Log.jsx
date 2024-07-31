@@ -30,6 +30,10 @@ const Log = () => {
   const [tableSorter, setTableSorter] = useState({});
 
   const { id } = useParams();
+  useEffect(() => {
+    console.log("id", id);
+  });
+
   const { importData, importIsLoading, importIsError, refetchImport } =
     useGetImport(id);
 
@@ -239,7 +243,7 @@ const Log = () => {
           </Button>
         </div>
       </div>
-      <Collapse defaultActiveKey={[]}>
+      <Collapse defaultActiveKey={[1]}>
         <Panel header="Import Metadata" key="1">
           {importIsLoading && (
             <div className={styles.logTableContainer}>
@@ -266,18 +270,22 @@ const Log = () => {
               <Descriptions.Item label="Status Message">
                 {importData.importItem.statusMessage.S}
               </Descriptions.Item>
-              <Descriptions.Item label="Chunk Count">
-                {importData.importItem.chunkCount.N}
-              </Descriptions.Item>
+              {importData.importItem.chunkCount?.N && (
+                <Descriptions.Item label="Chunk Count">
+                  {importData.importItem.chunkCount.N}
+                </Descriptions.Item>
+              )}
               <Descriptions.Item label="Import Date">
                 {formatDate(importData.importItem.importDate.S)}
               </Descriptions.Item>
               <Descriptions.Item label="Domain">
                 {importData.importItem.domain.S}
               </Descriptions.Item>
-              <Descriptions.Item label="Import Options">
-                {importData.importItem.importOptions.S}
-              </Descriptions.Item>
+              {importData.importItem.importOptions?.S && (
+                <Descriptions.Item label="Import Options">
+                  {importData.importItem.importOptions.S}
+                </Descriptions.Item>
+              )}
             </Descriptions>
           )}
         </Panel>

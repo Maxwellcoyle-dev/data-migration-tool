@@ -1,0 +1,4 @@
+catalog_code,item_code,item_type
+The code of the catalogue that this item belongs to,"The code of the item which we want to subscribe
+","The type of the item, can be ""course"" or ""learning_plan"".
+"

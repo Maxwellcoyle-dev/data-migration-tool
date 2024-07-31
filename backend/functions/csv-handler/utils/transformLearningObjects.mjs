@@ -1,4 +1,4 @@
-const transformLearningObjectData = (data) => {
+const transformLearningObject = (data) => {
   const transformedData = data.map((row) => {
     return {
       ...(row.course_code && { course_code: row.course_code }),
@@ -33,4 +33,4 @@ const transformLearningObjectData = (data) => {
   return { transformedData, batchCount: 20 };
 };
 
-export default transformLearningObjectData;
+export default transformLearningObject;

@@ -51,14 +51,14 @@ export const handler = async (event) => {
       }
 
       returnData.push({
-        importId: item.importId.S,
-        userId: item.userId.S,
-        importType: item.importType.S,
-        importStatus: newImportStatus,
-        chunkCount: item.chunkCount.N,
-        statusMessage: newStatusMessage,
-        importDate: item.importDate.S,
-        domain: item.domain.S,
+        ...(item.importId?.S && { importId: item.importId.S }),
+        ...(item.userId?.S && { userId: item.userId.S }),
+        ...(item.importType?.S && { importType: item.importType.S }),
+        ...(item.importStatus?.S && { importStatus: newImportStatus }),
+        ...(item.chunkCount?.N && { chunkCount: item.chunkCount.N }),
+        ...(item.statusMessage?.S && { statusMessage: newStatusMessage }),
+        ...(item.importDate?.S && { importDate: item.importDate.S }),
+        ...(item.domain?.S && { domain: item.domain.S }),
       });
     }
 

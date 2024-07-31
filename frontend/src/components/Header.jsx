@@ -5,10 +5,11 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const types = [
+  "branches",
+  "catalogs",
+  "catalog_items",
   "courses",
   "enrollments",
-  "catalogs",
-  "branches",
   "groups",
   "learning_objects",
 ];

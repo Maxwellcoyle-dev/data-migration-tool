@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Spin, Result } from "antd";
 import { IoIosCheckmarkCircle, IoMdWarning } from "react-icons/io";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const CSVUploader = ({
   csvReadyForImport,
@@ -15,6 +15,7 @@ const CSVUploader = ({
   uploadCSVResponseData,
 }) => {
   const navigate = useNavigate();
+
   return (
     <div
       style={{
@@ -52,8 +53,7 @@ const CSVUploader = ({
       )}
       {isError && (
         <>
-          <IoMdWarning style={{ color: "red", fontSize: 50 }} />
-          <Result status="error" title={csvUploadError} />
+          <Result status="error" title={csvUploadError?.statusMessage} />
           <Button
             type="default"
             onClick={() => {
@@ -66,37 +66,35 @@ const CSVUploader = ({
           </Button>
         </>
       )}
-      {uploadCSVResponseData &&
-        (console.log("uploadCSVResponseData", uploadCSVResponseData),
-        (
-          <>
-            <Result
-              status="success"
-              title={uploadCSVResponseData.statusMessage}
-              style={{ padding: 0 }}
-            />
-            <Button
-              type="default"
-              onClick={() => {
-                setCsvData([]);
-                setImportOptions({});
-                navigate(`/log/${uploadCSVResponseData.importId}`);
-              }}
-            >
-              View Log
-            </Button>
-            <Button
-              type="default"
-              onClick={() => {
-                setCsvData([]);
-                setImportOptions({});
-                setView("dropbox");
-              }}
-            >
-              Close
-            </Button>
-          </>
-        ))}
+      {uploadCSVResponseData && (
+        <>
+          <Result
+            status="success"
+            title={uploadCSVResponseData.statusMessage}
+            style={{ padding: 0 }}
+          />
+          <Button
+            type="default"
+            onClick={() => {
+              setCsvData([]);
+              setImportOptions({});
+              navigate(`/log/${uploadCSVResponseData.importId}`);
+            }}
+          >
+            View Log
+          </Button>
+          <Button
+            type="default"
+            onClick={() => {
+              setCsvData([]);
+              setImportOptions({});
+              setView("dropbox");
+            }}
+          >
+            Close
+          </Button>
+        </>
+      )}
     </div>
   );
 };
