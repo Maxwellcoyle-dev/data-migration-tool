@@ -21,6 +21,18 @@ const transformCatalogData = (data) => {
   return catalogData;
 };
 
+const transformCatalogItemsData = (data) => {
+  const catalogItemsData = data.map((row) => {
+    return {
+      catalog_code: row.catalog_code,
+      item_code: row.item_code,
+      item_type: row.item_type,
+    };
+  });
+  console.log("catalogItemsData", catalogItemsData);
+  return catalogItemsData;
+};
+
 const transformBranchData = (data) => {
   const branchData = data.map((row) => {
     const translations = {};
@@ -187,6 +199,8 @@ export const transformData = (data, importType) => {
       return transformGroupData(data);
     case "catalogs":
       return transformCatalogData(data);
+    case "catalog_items":
+      return transformCatalogItemsData(data);
     case "enrollments":
       return transformEnrollmentData(data);
     case "learning_objects":

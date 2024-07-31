@@ -10,6 +10,8 @@ const useGetImport = (importId) => {
   } = useQuery({
     queryKey: ["log", importId],
     queryFn: async () => {
+      console.log("Fetching import data with importId -- ", importId);
+
       const response = await axios.get(
         `https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/get-import`,
         {

@@ -40,25 +40,20 @@ const usePostCSV = () => {
         return response.data;
       } catch (error) {
         console.log("Full Axios Error:", error);
-
-        if (error.response && error.response.data) {
-          const errorMessage = `${error.response.data.data.error.name} -- ${error.response.data.data.error.message[0]}`;
-          console.log("Error message:", errorMessage);
-
-          throw new Error(errorMessage);
-        }
-        throw new Error(error.message || "Network or unknown error");
+        const errorPayload = error.response.data.importErrorPayload;
+        const errorMessage = `${errorPayload.importStatus}: ${errorPayload.statusMessage}`;
+        throw new Error(JSON.stringify(errorPayload)); // Convert to JSON string to handle the error as an object
       }
     },
     onError: (error) => {
-      console.error("Error in processing CSV:", error);
+      console.log("Error in processing CSV:", error);
     },
   });
 
   return {
     mutate,
     uploadCSVResponseData,
-    csvUploadError,
+    csvUploadError: csvUploadError ? JSON.parse(csvUploadError.message) : null, // Parse the error message back to an object
     isPending,
     isError,
     reset,

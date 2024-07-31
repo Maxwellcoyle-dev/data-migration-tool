@@ -4,6 +4,7 @@ import { catalogs } from "./types/catalogs";
 import { branches } from "./types/branches";
 import { groups } from "./types/groups";
 import { learningObjects } from "./types/learningObjects";
+import { catalogItems } from "./types/catalogItems";
 
 const types = (type) => {
   switch (type) {
@@ -19,6 +20,8 @@ const types = (type) => {
       return groups;
     case "learning_objects":
       return learningObjects;
+    case "catalog_items":
+      return catalogItems;
     default:
       return {};
   }
