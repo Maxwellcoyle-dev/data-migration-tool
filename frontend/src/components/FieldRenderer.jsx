@@ -1,5 +1,5 @@
 import React from "react";
-import { Collapse, Table, Typography, Button } from "antd";
+import { Collapse, Table, Typography, Button, Tag } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 
 const { Panel } = Collapse;
@@ -24,7 +24,7 @@ const FieldRenderer = ({ importType, fieldsVisible, typeFields }) => {
       <Panel
         header={
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <strong>{importType}</strong> fields
+            CSV schema for import type:<Tag>{importType}</Tag>
           </div>
         }
         key="1"

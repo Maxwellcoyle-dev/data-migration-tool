@@ -57,7 +57,7 @@ Resources:
         Variables:
           ACCESS_TOKEN_TABLE_NAME: AccessTokens
           CALLBACK_URI: https://jg2x5ta8g1.execute-api.us-east-2.amazonaws.com/Stage/callback
-          FRONTEND_URL: https://main.d2ffs3a7g3lby9.amplifyapp.com/callback?access_token=
+          FRONTEND_URL: https://migration.trainicity.com/callback?access_token=
 
   ScanAccessTokenTableFunction:
     Type: AWS::Serverless::Function
@@ -264,6 +264,7 @@ Resources:
       CodeUri: functions/get-import/
       Handler: app.handler
       Runtime: nodejs20.x
+      Timeout: 300
       Architectures:
         - x86_64
       Events:
