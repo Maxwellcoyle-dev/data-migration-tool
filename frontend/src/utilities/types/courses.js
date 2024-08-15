@@ -6,7 +6,7 @@ export const courses = {
     {
       field: "course_type",
       type: "string",
-      description: `The type of the course (elearning, webinar, classroom)`,
+      description: `The type of the course (elearning, classroom)`,
     },
     {
       field: "course_name",

@@ -24,7 +24,7 @@ const FieldRenderer = ({ importType, fieldsVisible, typeFields }) => {
       <Panel
         header={
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            CSV schema - <Tag>{importType}</Tag>
+            CSV schema for import type:<Tag>{importType}</Tag>
           </div>
         }
         key="1"
