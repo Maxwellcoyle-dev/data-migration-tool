@@ -254,6 +254,17 @@ const PlatformAuthenticator = ({ user }) => {
         ),
       },
     },
+    {
+      title: "Step 8",
+      content: {
+        content: (
+          <Text style={{ fontSize: "16px" }}>
+            Copy the platform Url into the the Domain field. For example:
+            traintopia.docebosaas.com
+          </Text>
+        ),
+      },
+    },
   ];
 
   const authenticatorSectionStyle = {
@@ -464,7 +475,7 @@ const PlatformAuthenticator = ({ user }) => {
                       size="large"
                       style={{ width: "100%" }}
                       type={
-                        platform.platformUrl !== domain ? "primary" : "default"
+                        platform.platformUrl === domain ? "primary" : "default"
                       }
                     >
                       {platform.platformUrl}
