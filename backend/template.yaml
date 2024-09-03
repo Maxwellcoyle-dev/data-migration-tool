@@ -264,7 +264,7 @@ Resources:
       CodeUri: functions/get-import/
       Handler: app.handler
       Runtime: nodejs20.x
-      Timeout: 300
+      Timeout: 500
       Architectures:
         - x86_64
       Events:
