@@ -7,6 +7,8 @@ import Papa from "papaparse";
 import { validateData } from "../utilities/validations";
 import { transformData } from "../utilities/tranformations";
 
+const MAX_FILE_SIZE = 6 * 1024 * 1024; // 6MB
+
 const CSVDropbox = ({
   onUpload,
   setCsvValidationError,
@@ -22,6 +24,16 @@ const CSVDropbox = ({
   const onDrop = useCallback(
     (acceptedFiles) => {
       const file = acceptedFiles[0];
+      // Check if the file size exceeds the maximum allowed size
+      if (file.size > MAX_FILE_SIZE) {
+        setCsvValidationError(
+          `File size - ${(file.size / 1000000).toFixed(
+            1
+          )}MB - exceeds the 6MB limit.`
+        );
+        return;
+      }
+
       let rowCount = 0;
       let previewData = [];
       let allHeaders = null;
@@ -91,6 +103,9 @@ const CSVDropbox = ({
       <button type="button" onClick={open} style={styles.button}>
         Browse Files
       </button>
+      <p style={{ color: "gray", fontSize: 16 }}>
+        File size must be 6MB or smaller
+      </p>
     </div>
   );
 };

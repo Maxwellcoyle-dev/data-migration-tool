@@ -2,6 +2,8 @@ import axios from "axios";
 
 import importTypes from "./importTypes.mjs";
 
+import { formatEnrollmentsDates } from "./formatEnrollmentDates.mjs";
+
 const batchDoceboImport = async (
   domain,
   importType,
@@ -9,6 +11,14 @@ const batchDoceboImport = async (
   data,
   importOptions
 ) => {
+  let importData;
+
+  if (importType === "enrollments") {
+    importData = formatEnrollmentsDates(data);
+  } else {
+    importData = data;
+  }
+
   // send data to Docebo
   const endpoint = importTypes[importType].endpoint;
   console.log("Endpoint:", endpoint);
@@ -22,7 +32,7 @@ const batchDoceboImport = async (
   try {
     console.log("Docebo API request:", url, data);
     const requestData = {
-      items: data,
+      items: importData,
       options: importOptions,
     };
     const response = await axios.post(url, requestData, { headers });
