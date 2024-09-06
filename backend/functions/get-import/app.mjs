@@ -56,59 +56,29 @@ export const handler = async (event) => {
     };
   }
 
-  // if (importItem.importStatus.S === "failed") {
-  //   return {
-  //     statusCode: 200,
-  //     headers: {
-  //       "Access-Control-Allow-Origin": "*",
-  //     },
-  //     body: JSON.stringify({ importItem }),
-  //   };
-  // }
+  // get the compiled Json file from the S3 bucket
+  const getParams = {
+    Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
+    Key: `${id}/compiled-logs.json`,
+  };
+  console.log("getParams", getParams);
+  const getCompiledJsonLogsCommand = new GetObjectCommand(getParams);
+  const getCompiledJsonLogs = await s3Client.send(getCompiledJsonLogsCommand);
+  const compiledJsonLogs = await streamToString(getCompiledJsonLogs.Body);
 
-  // get logs with GSI importId
-  const getLogParams = {
-    TableName: process.env.MIGRATION_LOG_TABLE,
-    IndexName: "importId-index",
-    KeyConditionExpression: "importId = :importId",
-    ExpressionAttributeValues: {
-      ":importId": { S: id },
-    },
+  const jsonLogs = JSON.parse(compiledJsonLogs);
+  console.log("jsonLogs", jsonLogs);
+
+
+  // ------  Continue working here ------
+  // get a presigned url for the compiled csv file
+  const getPresignedUrlParams = {
+    Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
+    Key: `${id}/compiled-logs.csv`,
+    Expires: 60 * 30,
   };
 
-  const getLogs = new QueryCommand(getLogParams);
-  const getLogsResponse = await dynamoClient.send(getLogs);
-  console.log("getLogsResponse", getLogsResponse);
-
-  const logItems = getLogsResponse.Items;
-  console.log("logItems", logItems);
-
-  // Process each logItem and retrieve the corresponding S3 object
-  const logContent = [];
-
-  for (const logItem of logItems) {
-    const getParams = {
-      Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
-      Key: logItem.logUrl.S,
-    };
-    console.log("getParams", getParams);
-
-    const getObjectCommand = new GetObjectCommand(getParams);
-    const getObject = await s3Client.send(getObjectCommand);
-    const bodyContent = await streamToString(getObject.Body);
-
-    let logs;
-    try {
-      logs = JSON.parse(bodyContent);
-      if (logs && Array.isArray(logs.data)) {
-        logContent.push(...logs.data); // Merge data content
-      }
-    } catch (error) {
-      console.error("Error parsing JSON:", error);
-    }
-  }
-
-  console.log("allLogContents", logContent);
+  
 
   return {
     statusCode: 200,
@@ -117,7 +87,7 @@ export const handler = async (event) => {
     },
     body: JSON.stringify({
       importItem,
-      logContent,
+      jsonLogs,
     }),
   };
 };
