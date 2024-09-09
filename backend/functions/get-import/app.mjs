@@ -5,6 +5,11 @@ import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 const s3Client = new S3Client({ region: "us-east-2" });
 
+const MIGRATION_IMPORT_TABLE = process.env.MIGRATION_IMPORT_TABLE;
+const MIGRATION_LOG_S3_BUCKET = process.env.MIGRATION_LOG_S3_BUCKET;
+
+const MAX_SIZE_MB = 5 * 1024 * 1024; // 5MB in bytes
+
 const streamToString = (stream) =>
   new Promise((resolve, reject) => {
     const chunks = [];
@@ -29,7 +34,7 @@ export const handler = async (event) => {
   console.log("id", id);
 
   const getImportParams = {
-    TableName: process.env.MIGRATION_IMPORT_TABLE,
+    TableName: MIGRATION_IMPORT_TABLE,
     Key: {
       importId: { S: id },
     },
@@ -55,7 +60,7 @@ export const handler = async (event) => {
 
   // get the compiled Json file from the S3 bucket
   const getParams = {
-    Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
+    Bucket: MIGRATION_LOG_S3_BUCKET,
     Key: `${id}/compiled-logs.json`,
   };
   console.log("getParams", getParams);
@@ -63,13 +68,13 @@ export const handler = async (event) => {
   const getCompiledJsonLogs = await s3Client.send(getCompiledJsonLogsCommand);
   const compiledJsonLogs = await streamToString(getCompiledJsonLogs.Body);
 
-  const jsonLogs = JSON.parse(compiledJsonLogs);
-  console.log("jsonLogs", jsonLogs);
+  const jsonSizeInBytes = Buffer.byteLength(compiledJsonLogs, "utf-8");
+  console.log(`JSON file size: ${jsonSizeInBytes} bytes`);
 
   // ------  Continue working here ------
   // get a presigned url for the compiled csv file
   const getPresignedUrlParams = {
-    Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
+    Bucket: MIGRATION_LOG_S3_BUCKET,
     Key: `${id}/compiled-logs.csv`,
   };
 
@@ -79,6 +84,24 @@ export const handler = async (event) => {
   });
 
   console.log("presignedUrl", presignedUrl);
+
+  if (jsonSizeInBytes > MAX_SIZE_MB) {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        importItem,
+        statusMessage:
+          "Import logs json exceed 5MB. Download the CSV file for logs.",
+        presignedUrl,
+      }),
+    };
+  }
+
+  const jsonLogs = JSON.parse(compiledJsonLogs);
+  console.log("jsonLogs", jsonLogs);
 
   return {
     statusCode: 200,
