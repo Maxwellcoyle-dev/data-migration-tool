@@ -47,8 +47,8 @@ const handlePendingImports = async (importItem) => {
   let status;
   let message;
   if (processedChunks === chunkCount) {
-    status = "compiling logs";
-    message = "CSV import process complete.";
+    status = "pending";
+    message = "CSV import process complete. Compiling Logs.";
 
     // update import status in migration-imports table
     const updateParams = {

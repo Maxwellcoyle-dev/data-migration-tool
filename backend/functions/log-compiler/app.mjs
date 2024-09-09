@@ -3,6 +3,8 @@ import {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
+  ListObjectsCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import {
   DynamoDBClient,
@@ -15,6 +17,7 @@ import { Parser } from "@json2csv/plainjs";
 const MIGRATION_IMPORT_TABLE = process.env.MIGRATION_IMPORT_TABLE;
 const MIGRATION_LOG_TABLE = process.env.MIGRATION_LOG_TABLE;
 const MIGRATION_LOG_S3_BUCKET = process.env.MIGRATION_LOG_S3_BUCKET;
+const COMPILER_SQS_URL = process.env.COMPILER_SQS_URL;
 
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 const s3Client = new S3Client({ region: "us-east-2" });
@@ -190,6 +193,41 @@ export const handler = async (event) => {
 
   const updateCommand = new UpdateItemCommand(updateParams);
   await dynamoClient.send(updateCommand);
+
+  // Delete the message from the SQS queue
+  const sqsClient = new SQSClient({ region: "us-east-2" });
+  const deleteParams = {
+    QueueUrl: COMPILER_SQS_URL,
+    ReceiptHandle: record.receiptHandle,
+  };
+
+  console.log("Deleting message from SQS");
+  const deleteCommand = new DeleteMessageCommand(deleteParams);
+  await sqsClient.send(deleteCommand);
+
+  // delete the chunk files from S3 so that only the newly created compiled logs are available
+
+  // list all objects in the bucket
+  const listParams = {
+    Bucket: MIGRATION_LOG_S3_BUCKET,
+    Prefix: `${importId}/`,
+  };
+  console.log("listParams", listParams);
+
+  const listObjects = await s3Client.send(new ListObjectsCommand(listParams));
+  console.log("listObjects", listObjects);
+
+  // // delete all of the objects that start with chunk_
+  // const deleteObjects = listObjects.Contents.map((object) => {
+  //   console.log("Deleting object:", object.Key);
+  //   const deleteParams = {
+  //     Bucket: MIGRATION_LOG_S3_BUCKET,
+  //     Key: object.Key,
+  //   };
+  //   return s3Client.send(new DeleteObjectCommand(deleteParams));
+  // });
+
+  // await Promise.all(deleteObjects);
 
   // -----
   // -----

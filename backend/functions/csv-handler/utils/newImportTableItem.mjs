@@ -16,6 +16,7 @@ const newImportTableItem = async (importErrorPayload) => {
     importOptions,
     domain,
     importDate,
+    fileName,
   } = importErrorPayload;
 
   const params = {
@@ -31,6 +32,7 @@ const newImportTableItem = async (importErrorPayload) => {
       ...(Object.keys(importOptions).length > 0 && {
         importOptions: { S: JSON.stringify(importOptions) },
       }),
+      fileName: { S: fileName },
       domain: { S: domain },
       importDate: { S: importDate },
     },

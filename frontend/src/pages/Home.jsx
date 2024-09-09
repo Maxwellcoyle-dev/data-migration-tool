@@ -33,6 +33,11 @@ const Home = ({ currentPlatformInfo, user }) => {
   } = usePostCSV();
 
   useEffect(() => {
+    console.log("csvData", csvData);
+    console.log("csvFile", csvFile);
+  }, [csvData, csvFile]);
+
+  useEffect(() => {
     if (
       csvData.length > 0 &&
       (csvValidationError === "" || csvtransformError === "")
@@ -104,9 +109,11 @@ const Home = ({ currentPlatformInfo, user }) => {
     console.log("user", user);
     console.log("currentPlatformInfo", currentPlatformInfo);
     console.log("importType", importType);
+    console.log("csvFile.name", csvFile.name);
 
     const formData = new FormData();
     formData.append("file", csvFile);
+    formData.append("fileName", csvFile.name);
     formData.append("options", JSON.stringify(cleanedOptions));
     formData.append("userId", user.userId);
     formData.append("domain", currentPlatformInfo.domain);
