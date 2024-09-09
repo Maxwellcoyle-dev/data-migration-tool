@@ -1,9 +1,6 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import {
-  DynamoDBClient,
-  GetItemCommand,
-  QueryCommand,
-} from "@aws-sdk/client-dynamodb";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 const s3Client = new S3Client({ region: "us-east-2" });
@@ -69,16 +66,19 @@ export const handler = async (event) => {
   const jsonLogs = JSON.parse(compiledJsonLogs);
   console.log("jsonLogs", jsonLogs);
 
-
   // ------  Continue working here ------
   // get a presigned url for the compiled csv file
   const getPresignedUrlParams = {
     Bucket: process.env.MIGRATION_LOG_S3_BUCKET,
     Key: `${id}/compiled-logs.csv`,
-    Expires: 60 * 30,
   };
 
-  
+  const getPresignedUrlCommand = new GetObjectCommand(getPresignedUrlParams);
+  const presignedUrl = await getSignedUrl(s3Client, getPresignedUrlCommand, {
+    expiresIn: 3600,
+  });
+
+  console.log("presignedUrl", presignedUrl);
 
   return {
     statusCode: 200,
@@ -88,6 +88,7 @@ export const handler = async (event) => {
     body: JSON.stringify({
       importItem,
       jsonLogs,
+      presignedUrl,
     }),
   };
 };
