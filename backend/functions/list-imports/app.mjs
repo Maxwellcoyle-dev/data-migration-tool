@@ -59,6 +59,7 @@ export const handler = async (event) => {
         ...(item.statusMessage?.S && { statusMessage: newStatusMessage }),
         ...(item.importDate?.S && { importDate: item.importDate.S }),
         ...(item.domain?.S && { domain: item.domain.S }),
+        ...(item.fileName?.S && { fileName: item.fileName.S }),
       });
     }
 

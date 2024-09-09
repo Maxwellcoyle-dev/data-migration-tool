@@ -21,17 +21,15 @@ export const handler = async (event) => {
   try {
     let importMetadata = null; // Ensure importMetadata is defined
     // Process the multipart form data
-    const { fileData, importOptions, userId, domain, importType } =
+    const { fileData, importOptions, userId, domain, importType, fileName } =
       await processMultipartForm(event);
 
-    console.log(
-      "Received data:",
-      fileData,
-      importOptions,
-      userId,
-      domain,
-      importType
-    );
+    console.log("fileData", fileData);
+    console.log("importOptions", importOptions);
+    console.log("userId", userId);
+    console.log("domain", domain);
+    console.log("importType", importType);
+    console.log("fileName", fileName);
 
     // Convert CSV to JSON
     const jsonData = await csvToJson(fileData);
@@ -49,6 +47,7 @@ export const handler = async (event) => {
       statusMessage: "CSV import has been initiated.",
       importType,
       importOptions,
+      fileName,
       domain,
       importDate: new Date().toISOString(),
     };
@@ -89,6 +88,7 @@ export const handler = async (event) => {
         statusMessage: `${error.message} -- Import type did not match any of the available types. please report this error to: max.henderson@trainicity.com`,
         importType,
         importOptions,
+        fileName,
         domain,
         importDate: importMetadata.importDate,
       };
@@ -123,6 +123,7 @@ export const handler = async (event) => {
             chunkNumber,
             importId,
             userId,
+            fileName,
             importType,
             importOptions,
             domain,
@@ -142,6 +143,7 @@ export const handler = async (event) => {
         statusMessage: `${error.message} -- sending messages to SQS`,
         importType,
         chunkCount,
+        fileName,
         importOptions,
         domain,
         importDate: importMetadata.importDate,
@@ -161,6 +163,7 @@ export const handler = async (event) => {
           statusMessage: { S: "CSV import has been initiated." },
           importType: { S: importType },
           chunkCount: { N: chunkCount.toString() },
+          fileName: { S: fileName },
           importOptions: { S: JSON.stringify(importOptions) },
           domain: { S: domain },
           importDate: { S: importMetadata.importDate },
@@ -178,6 +181,7 @@ export const handler = async (event) => {
         statusMessage: `${error.message} -- saving metadata to DynamoDB`,
         importType,
         chunkCount,
+        fileName,
         importOptions,
         domain,
         importDate: importMetadata.importDate,
@@ -205,6 +209,7 @@ export const handler = async (event) => {
       statusMessage: `${error.message} -- saving metadata to DynamoDB`,
       importType,
       chunkCount,
+      fileName,
       importOptions,
       domain,
       importDate: importMetadata.importDate,

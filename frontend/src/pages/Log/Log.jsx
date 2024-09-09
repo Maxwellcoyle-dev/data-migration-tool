@@ -297,17 +297,20 @@ const Log = () => {
               <Descriptions.Item label="Status Message">
                 {importData.importItem.statusMessage.S}
               </Descriptions.Item>
+              <Descriptions.Item label="Domain">
+                {importData.importItem.domain.S}
+              </Descriptions.Item>
+              <Descriptions.Item label="Import Date">
+                {formatDate(importData.importItem.importDate.S)}
+              </Descriptions.Item>
+              <Descriptions.Item label="File Name">
+                {importData.importItem.fileName.S}
+              </Descriptions.Item>
               {importData.importItem.chunkCount?.N && (
                 <Descriptions.Item label="Chunk Count">
                   {importData.importItem.chunkCount.N}
                 </Descriptions.Item>
               )}
-              <Descriptions.Item label="Import Date">
-                {formatDate(importData.importItem.importDate.S)}
-              </Descriptions.Item>
-              <Descriptions.Item label="Domain">
-                {importData.importItem.domain.S}
-              </Descriptions.Item>
               {importData.importItem.importOptions?.S && (
                 <Descriptions.Item label="Import Options">
                   {importData.importItem.importOptions.S}

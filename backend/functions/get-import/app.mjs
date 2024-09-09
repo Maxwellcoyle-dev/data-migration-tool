@@ -58,6 +58,19 @@ export const handler = async (event) => {
     };
   }
 
+  if (importItem.importStatus.S !== "complete") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        importItem,
+        statusMessage: "Import is not complete.",
+      }),
+    };
+  }
+
   // get the compiled Json file from the S3 bucket
   const getParams = {
     Bucket: MIGRATION_LOG_S3_BUCKET,

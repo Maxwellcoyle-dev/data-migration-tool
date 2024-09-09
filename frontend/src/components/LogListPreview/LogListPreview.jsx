@@ -21,6 +21,7 @@ const LogListPreview = () => {
       key: log.importId,
       domain: log.domain,
       importDate: log.importDate,
+      fileName: log.fileName,
       status: log.importStatus,
       statusMessage: log.statusMessage,
       importType: log.importType,
@@ -62,6 +63,11 @@ const LogListPreview = () => {
       title: "Domain",
       dataIndex: "domain",
       key: "domain",
+    },
+    {
+      title: "File Name",
+      dataIndex: "fileName",
+      key: "fileName",
     },
     {
       title: "Import Type",

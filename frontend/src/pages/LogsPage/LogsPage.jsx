@@ -23,6 +23,7 @@ const LogsPage = () => {
       importDate: log.importDate,
       status: log.importStatus,
       message: log.statusMessage,
+      fileName: log.fileName,
       importType: log.importType,
       importId: log.importId,
     };
@@ -57,6 +58,11 @@ const LogsPage = () => {
       title: "Domain",
       dataIndex: "domain",
       key: "domain",
+    },
+    {
+      title: "File Name",
+      dataIndex: "fileName",
+      key: "fileName",
     },
     {
       title: "Import Type",

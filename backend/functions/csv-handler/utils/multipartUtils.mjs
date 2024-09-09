@@ -10,6 +10,7 @@ export const processMultipartForm = (event) => {
     let importType = "";
     let userId = "";
     let domain = "";
+    let fileName = "";
 
     busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
       file.on("data", (data) => {
@@ -29,6 +30,8 @@ export const processMultipartForm = (event) => {
         userId = val;
       } else if (fieldname === "domain") {
         domain = val;
+      } else if (fieldname === "fileName") {
+        fileName = val;
       }
     });
 
@@ -41,6 +44,7 @@ export const processMultipartForm = (event) => {
           importType,
           userId,
           domain,
+          fileName,
         });
       } catch (error) {
         onsole.error("Error during form finish:", error);

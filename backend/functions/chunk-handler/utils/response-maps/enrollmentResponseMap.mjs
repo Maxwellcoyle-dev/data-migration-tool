@@ -2,7 +2,14 @@ const enrollmentResponseMap = (response, data) => {
   console.log("Mapping course response");
   // Create a map of code to catalog items
 
-  const responseData = response.data.map((item) => {
+  // Filter out items where success is true
+  const failedResponses = response.data.filter((item) => !item.success);
+
+  // Map over the failed items to create the response
+  const responseData = failedResponses.map((item) => {
+    console.log("Mapping course response for failed items");
+    console.log(item);
+
     return {
       row_index: item.row_index,
       course_id: item.course_id,
@@ -15,6 +22,7 @@ const enrollmentResponseMap = (response, data) => {
       message: item.message,
     };
   });
+
   return responseData;
 };
 
