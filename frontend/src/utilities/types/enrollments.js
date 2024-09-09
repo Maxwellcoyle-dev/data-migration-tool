@@ -193,7 +193,7 @@ export const enrollments = {
       label: "Status",
       description:
         "(optional) If it is set, it has higher priority over 'status' sent outside these 'options' object. This field is required if NOT set inside the 'items' objects. Can be subscribed, in_progress, completed, waiting, to_confirm or suspended",
-      defaultValue: "subscribed",
+      defaultValue: "",
     },
     level: {
       type: "string",
@@ -235,7 +235,7 @@ export const enrollments = {
       label: "Assignment Type",
       description:
         "(optional) Assignment Type enrollment attribute. Can be passed only when the attribute is configured in the platform advanced settings. The possible values are 'mandatory', 'required', 'recommended', 'optional' but to be accepted they must be enabled in the settings. This parameter is optional. Can be mandatory, required, recommended or optional",
-      defaultValue: "mandatory",
+      defaultValue: "",
     },
     digest_notification_ids: {
       type: "array",

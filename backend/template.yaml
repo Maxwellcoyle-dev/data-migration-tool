@@ -253,8 +253,14 @@ Resources:
             Action:
               - s3:GetObject
             Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+        - Statement:
+            Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt MigrationLogCompilerQueue.Arn
       Environment:
         Variables:
+          COMPILER_SQS_URL: !Ref MigrationLogCompilerQueue
           MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
           MIGRATION_LOG_TABLE: !Ref MigrationLogTable
 
@@ -264,7 +270,7 @@ Resources:
       CodeUri: functions/get-import/
       Handler: app.handler
       Runtime: nodejs20.x
-      Timeout: 300
+      Timeout: 500
       Architectures:
         - x86_64
       Events:
@@ -285,6 +291,55 @@ Resources:
             Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
       Environment:
         Variables:
+          MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
+          MIGRATION_LOG_TABLE: !Ref MigrationLogTable
+          MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket
+
+  # Log Compiler SQS + Lambda
+  MigrationLogCompilerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: MigrationLogCompilerQueue
+      VisibilityTimeout: 600 # Set this to a higher value than your Lambda timeout
+      ReceiveMessageWaitTimeSeconds: 20 # Long polling
+      DelaySeconds: 5 # Delay before processing messages
+
+  LogCompilerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/log-compiler/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Timeout: 500
+      Architectures:
+        - x86_64
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MigrationLogCompilerQueue.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MigrationImportTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref MigrationLogTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource: !Sub arn:aws:s3:::${DoceboMigrationLogBucket}/*
+        - Statement:
+            Effect: Allow
+            Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+            Resource: !GetAtt MigrationLogCompilerQueue.Arn
+      Environment:
+        Variables:
+          COMPILER_SQS_URL: !Ref MigrationLogCompilerQueue
           MIGRATION_IMPORT_TABLE: !Ref MigrationImportTable
           MIGRATION_LOG_TABLE: !Ref MigrationLogTable
           MIGRATION_LOG_S3_BUCKET: !Ref DoceboMigrationLogBucket

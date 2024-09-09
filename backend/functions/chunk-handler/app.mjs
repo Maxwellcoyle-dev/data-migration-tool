@@ -6,12 +6,12 @@ import nonBatchDoceboImport from "./utils/nonBatchDoceboImport.mjs";
 import addLogsToS3 from "./utils/addLogsToS3.mjs";
 import addLogToTable from "./utils/AddLogToTable.mjs";
 import updateImportTable from "./utils/updateImportTable.mjs";
-import handleErrors from "./utils/handlePendingImports.mjs";
+import handleErrors from "./utils/handleErrors.mjs";
+
+const sqs = new SQSClient({ region: "us-east-2" });
 
 export const handler = async (event) => {
   console.log("Event received:", event);
-
-  const sqs = new SQSClient({ region: "us-east-2" });
 
   for (const record of event.Records) {
     let importId;
@@ -68,7 +68,7 @@ export const handler = async (event) => {
       }
 
       if (!doceboResponse.success) {
-        // update importtable with error
+        // update import table with error
         await updateImportTable(importId, doceboResponse.statusMessage);
         return {
           statusCode: 500,
@@ -83,7 +83,7 @@ export const handler = async (event) => {
       await addLogsToS3(importId, chunkNumber, doceboResponse);
 
       // update DynamoDB with the log
-      await addLogToTable(importId, chunkNumber, doceboResponse);
+      await addLogToTable(importId, chunkNumber);
 
       // delete processed SQS message
       const deleteParams = {

@@ -1,40 +1,11 @@
-import {
-  DynamoDBClient,
-  UpdateItemCommand,
-  GetItemCommand,
-} from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 
-const getLogTableItem = async (importId) => {
-  const params = {
-    TableName: process.env.MIGRATION_LOG_TABLE,
-    Key: {
-      importId: { S: importId },
-    },
-    ProjectExpression: "chunkCount",
-  };
-
-  try {
-    const data = await dynamoClient.send(new GetItemCommand(params));
-    console.log("Get Log Table Item response:", data);
-    return data;
-  } catch (err) {
-    console.error("DynamoDB error:", err);
-  }
-};
-
-const updateLogTable = async (
-  importId,
-  chunkNumber,
-  chunkCount,
-  doceboResponse
-) => {
+const updateLogTable = async (importId, chunkNumber) => {
   console.log("Updating log table with chunk metadata");
   console.log("importId", importId);
   console.log("chunkNumber", chunkNumber);
-  console.log("chunkCount", chunkCount);
-  console.log("doceboResponse", doceboResponse);
 
   const params = {
     TableName: process.env.MIGRATION_LOG_TABLE,

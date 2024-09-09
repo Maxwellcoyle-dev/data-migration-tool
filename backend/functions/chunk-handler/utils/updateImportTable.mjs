@@ -3,7 +3,7 @@ import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
 
 const updateImportTable = async (importId, statusMessage) => {
-  console.log("Updating import table Docebo API error message and stauts");
+  console.log("Updating import table with Docebo API error message and stauts");
   console.log("importId", importId);
   console.log("statusMessage", statusMessage);
 

@@ -4,7 +4,12 @@ import {
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 
-const client = new DynamoDBClient({ region: "us-east-2" });
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+
+const dynamoDBClient = new DynamoDBClient({ region: "us-east-2" });
+const sqsClient = new SQSClient({ region: "us-east-2" });
+
+const COMPILER_SQS_URL = process.env.COMPILER_SQS_URL;
 
 const handlePendingImports = async (importItem) => {
   console.log("handling pending import");
@@ -24,7 +29,7 @@ const handlePendingImports = async (importItem) => {
   };
 
   const command = new QueryCommand(params);
-  const data = await client.send(command);
+  const data = await dynamoDBClient.send(command);
 
   console.log("log Data -- ", data);
 
@@ -60,7 +65,21 @@ const handlePendingImports = async (importItem) => {
     console.log("updateParams -- ", updateParams);
 
     const updateCommand = new UpdateItemCommand(updateParams);
-    await client.send(updateCommand);
+    await dynamoDBClient.send(updateCommand);
+
+    // Send message to Compiler Queue - to compile the logs
+    const sqsParams = {
+      QueueUrl: process.env.COMPILER_SQS_URL,
+      MessageBody: JSON.stringify({
+        importId,
+        userId: importItem.userId.S,
+      }),
+    };
+
+    console.log("sqsParams -- ", sqsParams);
+
+    await sqsClient.send(new SendMessageCommand(sqsParams));
+
     return { status, message };
   } else {
     status = "pending";

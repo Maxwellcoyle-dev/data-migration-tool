@@ -46,11 +46,11 @@ const Log = () => {
   useEffect(() => {
     console.log("importData", importData);
     setFilteredData(
-      Array.isArray(importData?.logContent) ? importData.logContent : []
+      Array.isArray(importData?.jsonLogs) ? importData.jsonLogs : []
     );
   }, [importData]);
 
-  const keys = Object.keys(importData?.logContent?.[0] || {});
+  const keys = Object.keys(importData?.jsonLogs?.[0] || {});
 
   const columns = keys.map((key) => {
     if (key === "success") {
@@ -122,7 +122,7 @@ const Log = () => {
   });
 
   const handleTableChange = (pagination, filters, sorter) => {
-    let filtered = [...(importData?.logContent || [])];
+    let filtered = [...(importData?.jsonLogs || [])];
 
     if (filters.success) {
       filtered = filtered.filter((item) =>
@@ -154,7 +154,7 @@ const Log = () => {
   const resetFiltersAndSorting = () => {
     setTableFilters({});
     setTableSorter({});
-    setFilteredData(importData?.logContent || []);
+    setFilteredData(importData?.jsonLogs || []);
   };
 
   const downloadCSV = () => {
