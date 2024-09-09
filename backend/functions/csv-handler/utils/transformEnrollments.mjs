@@ -30,7 +30,7 @@ const transformEnrollments = (data) => {
   });
 
   console.log("enrollmentData", transformedData);
-  return { transformedData, batchCount: 1 };
+  return { transformedData, batchCount: 300 };
 };
 
 export default transformEnrollments;

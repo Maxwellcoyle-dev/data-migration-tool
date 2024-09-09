@@ -9,6 +9,7 @@ import {
   Collapse,
   Spin,
   Alert,
+  Empty,
 } from "antd";
 import {
   DownloadOutlined,
@@ -24,7 +25,6 @@ import styles from "./Log.module.css";
 const { Panel } = Collapse;
 
 const Log = () => {
-  const [importListItemIndex, setImportListItemIndex] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
   const [tableFilters, setTableFilters] = useState({});
   const [tableSorter, setTableSorter] = useState({});
@@ -245,13 +245,27 @@ const Log = () => {
           <Button icon={<ReloadOutlined />} onClick={refetchImport}>
             Refresh
           </Button>
-          <Button onClick={downloadCSV} icon={<DownloadOutlined />}>
+
+          <Button
+            onClick={downloadCSV}
+            disabled={!filteredData.length}
+            icon={<DownloadOutlined />}
+          >
             Download Current Logs
           </Button>
-          <Button onClick={downloadAllLogs} icon={<DownloadOutlined />}>
+
+          <Button
+            onClick={downloadAllLogs}
+            disabled={!importData?.presignedUrl}
+            icon={<DownloadOutlined />}
+          >
             Download All Logs
           </Button>
-          <Button onClick={resetFiltersAndSorting} icon={<ReloadOutlined />}>
+          <Button
+            onClick={resetFiltersAndSorting}
+            disabled={!filteredData.length}
+            icon={<ReloadOutlined />}
+          >
             Reset Filters & Sorting
           </Button>
         </div>
@@ -310,6 +324,17 @@ const Log = () => {
           dataSource={filteredData}
           rowKey="row_index"
           onChange={handleTableChange}
+          locale={{
+            emptyText: (
+              <Empty
+                description={
+                  importData?.statusMessage
+                    ? `${importData.statusMessage}`
+                    : "No Log Data"
+                }
+              />
+            ),
+          }}
         />
       )}
     </div>
