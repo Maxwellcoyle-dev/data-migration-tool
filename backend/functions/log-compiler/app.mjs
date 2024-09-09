@@ -8,6 +8,7 @@ import {
   DynamoDBClient,
   GetItemCommand,
   QueryCommand,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { Parser } from "@json2csv/plainjs";
 
@@ -149,23 +150,46 @@ export const handler = async (event) => {
   // Convert the log content to CSV
   try {
     const parser = new Parser();
-    const csv = parser.parse(allLogContent);
+    const csv = parser.parse(allLogContent); // Correctly parse the log content to CSV format
     console.log("CSV:", csv);
+
     // Add the new csv file to S3 bucket
     const s3ParamsforCSV = {
       Bucket: MIGRATION_LOG_S3_BUCKET,
       Key: `${importId}/compiled-logs.csv`,
-      Body: JSON.stringify(allLogContent),
+      Body: csv, // Directly pass the parsed CSV content
+      ContentType: "text/csv", // Make sure to set the correct content type
     };
-    console.log("s3Params", s3ParamsforCSV);
+
+    console.log("s3ParamsforCSV", s3ParamsforCSV);
 
     const csvUploadResponse = await s3Client.send(
       new PutObjectCommand(s3ParamsforCSV)
     );
-    console.log("S3 response:", csvUploadResponse);
+
+    console.log("S3 response for CSV:", csvUploadResponse);
   } catch (error) {
-    console.error("Error parsing CSV:", error);
+    console.error("Error parsing or uploading CSV:", error);
   }
+
+  // update import status in migration-imports table
+  const updateParams = {
+    TableName: MIGRATION_IMPORT_TABLE,
+    Key: {
+      importId: { S: importId },
+    },
+    UpdateExpression:
+      "SET importStatus = :importStatus, statusMessage = :statusMessage",
+    ExpressionAttributeValues: {
+      ":importStatus": { S: "complete" },
+      ":statusMessage": { S: "Import complete and logs compiled." },
+    },
+  };
+
+  console.log("updateParams -- ", updateParams);
+
+  const updateCommand = new UpdateItemCommand(updateParams);
+  await dynamoClient.send(updateCommand);
 
   // -----
   // -----

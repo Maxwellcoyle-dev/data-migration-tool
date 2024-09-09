@@ -221,7 +221,7 @@ export const enrollments = {
       label: "Trigger Notifications",
       description:
         "(optional) Trigger notifications when saving/updating user enrollments. Not related to the digest_notification_ids parameter. Default: true",
-      defaultValue: true,
+      defaultValue: false,
     },
     trigger_certifications: {
       type: "boolean",

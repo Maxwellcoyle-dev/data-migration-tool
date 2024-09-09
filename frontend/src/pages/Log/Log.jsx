@@ -157,6 +157,16 @@ const Log = () => {
     setFilteredData(importData?.jsonLogs || []);
   };
 
+  const downloadAllLogs = () => {
+    const url = importData.presignedUrl;
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "import_log_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const downloadCSV = () => {
     const csvData = convertToCSV(filteredData);
     const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
@@ -236,7 +246,10 @@ const Log = () => {
             Refresh
           </Button>
           <Button onClick={downloadCSV} icon={<DownloadOutlined />}>
-            Download CSV
+            Download Current Logs
+          </Button>
+          <Button onClick={downloadAllLogs} icon={<DownloadOutlined />}>
+            Download All Logs
           </Button>
           <Button onClick={resetFiltersAndSorting} icon={<ReloadOutlined />}>
             Reset Filters & Sorting
