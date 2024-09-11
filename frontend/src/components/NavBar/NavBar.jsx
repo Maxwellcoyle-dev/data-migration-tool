@@ -21,12 +21,7 @@ const NavBar = ({ signOut }) => {
 
   const navigate = useNavigate();
 
-  const {
-    currentPlatformInfo,
-    setCurrentPlatformInfo,
-    authenticated,
-    setAuthenticated,
-  } = useAppContext();
+  const { currentPlatformInfo, authenticated } = useAppContext();
 
   useEffect(() => {
     setPath(pathname);
