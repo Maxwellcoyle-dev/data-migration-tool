@@ -32,7 +32,7 @@ const Log = () => {
   const { id } = useParams();
   useEffect(() => {
     console.log("id", id);
-  });
+  }, [id]);
 
   const { importData, importIsLoading, importIsError, refetchImport } =
     useGetImport(id);
@@ -86,13 +86,32 @@ const Log = () => {
           <div style={{ padding: 8 }}>
             <Input
               placeholder={`Search ${key}`}
-              value={selectedKeys[0]}
+              value={selectedKeys[0]} // Single input for search text
               onChange={(e) =>
-                setSelectedKeys(e.target.value ? [e.target.value] : [])
+                setSelectedKeys([
+                  e.target.value,
+                  selectedKeys[1] || false, // Preserve exclude state
+                ])
               }
               onPressEnter={confirm}
               style={{ marginBottom: 8, display: "block" }}
             />
+            <div
+              style={{ display: "flex", alignItems: "center", marginBottom: 8 }}
+            >
+              <input
+                type="checkbox"
+                id="exclude"
+                checked={selectedKeys[1] || false} // Ensure it defaults to false
+                onChange={
+                  (e) =>
+                    setSelectedKeys([selectedKeys[0] || "", e.target.checked]) // Update the second value with checkbox state
+                }
+              />
+              <label htmlFor="exclude" style={{ marginLeft: 8 }}>
+                Exclude
+              </label>
+            </div>
             <Button
               type="primary"
               onClick={confirm}
@@ -107,8 +126,7 @@ const Log = () => {
             </Button>
           </div>
         ),
-        onFilter: (value, record) =>
-          record[key].toString().toLowerCase().includes(value.toLowerCase()),
+        // Removed onFilter
       };
     } else {
       return {
@@ -124,18 +142,34 @@ const Log = () => {
   const handleTableChange = (pagination, filters, sorter) => {
     let filtered = [...(importData?.jsonLogs || [])];
 
+    // Handle 'success' filters
     if (filters.success) {
       filtered = filtered.filter((item) =>
         filters.success.includes(item.success)
       );
     }
 
-    if (filters.message && filters.message.length) {
-      filtered = filtered.filter((item) =>
-        item.message.toLowerCase().includes(filters.message[0].toLowerCase())
-      );
+    // Handle 'message' filters with 'exclude' logic
+    if (filters.message && filters.message.length > 0) {
+      const searchTerm = filters.message[0]?.toLowerCase() || "";
+      const exclude = filters.message[1] || false;
+
+      if (searchTerm) {
+        if (exclude) {
+          // Exclude messages that include the search term
+          filtered = filtered.filter(
+            (item) => !item.message.toLowerCase().includes(searchTerm)
+          );
+        } else {
+          // Include only messages that include the search term
+          filtered = filtered.filter((item) =>
+            item.message.toLowerCase().includes(searchTerm)
+          );
+        }
+      }
     }
 
+    // Handle sorting
     if (sorter.order) {
       filtered = filtered.sort((a, b) => {
         if (a[sorter.field] > b[sorter.field])
