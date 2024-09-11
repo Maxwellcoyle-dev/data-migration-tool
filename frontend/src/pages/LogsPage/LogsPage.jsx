@@ -1,18 +1,26 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Table, Tag } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
-import useListImportLogs from "../../hooks/useListImportLogs.js";
+import { Button, Table, Tag, Popconfirm } from "antd";
+import { ReloadOutlined, DeleteOutlined } from "@ant-design/icons";
 
+// Hooks
+import useListImportLogs from "../../hooks/useListImportLogs.js";
+import useDeleteImport from "../../hooks/useDeleteImport.js";
+
+// Styles
 import styles from "./LogsPage.module.css";
 
-const LogsPage = () => {
+const LogsPage = ({ user }) => {
   const {
     importsList,
     importsListIsLoading,
     importsListIsError,
     refetchImportsList,
   } = useListImportLogs();
+
+  const { deleteImportAsync, deleteImportIsPending } = useDeleteImport(
+    user.userId
+  );
 
   const navigate = useNavigate();
 
@@ -91,8 +99,25 @@ const LogsPage = () => {
       title: "Actions",
       dataIndex: "importId",
       key: "actions",
-      render: (importId) => (
-        <Button onClick={() => navigate(`/log/${importId}`)}>View Log</Button>
+      render: (importId, status) => (
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          <Button onClick={() => navigate(`/log/${importId}`)}>View</Button>
+          <Popconfirm
+            title="Are you sure you want to delete this import?"
+            onConfirm={() => deleteImportAsync(importId)}
+            okText="Delete"
+            okType="danger"
+            okButtonProps={{ loading: deleteImportIsPending }}
+            cancelText="Cancel"
+            placement="left"
+          >
+            <Button
+              danger
+              disabled={status === "pending"}
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
+        </div>
       ),
     },
   ];

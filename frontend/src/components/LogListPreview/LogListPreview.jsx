@@ -1,18 +1,23 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Table, Tag } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { Button, Table, Tag, Popconfirm } from "antd";
+import { ReloadOutlined, DeleteOutlined } from "@ant-design/icons";
+
+// Hooks
 import useListImportLogs from "../../hooks/useListImportLogs.js";
+import useDeleteImport from "../../hooks/useDeleteImport.js";
 
 import styles from "./LogListPreview.module.css";
 
-const LogListPreview = () => {
+const LogListPreview = ({ user }) => {
   const {
     importsList,
     importsListIsLoading,
     importsListIsError,
     refetchImportsList,
   } = useListImportLogs();
+
+  const { deleteImport, deleteImportIsPending } = useDeleteImport(user.userId);
 
   const navigate = useNavigate();
 
@@ -22,7 +27,7 @@ const LogListPreview = () => {
       domain: log.domain,
       importDate: log.importDate,
       fileName: log.fileName,
-      status: log.importStatus,
+      importStatus: log.importStatus,
       statusMessage: log.statusMessage,
       importType: log.importType,
       importId: log.importId,
@@ -76,10 +81,10 @@ const LogListPreview = () => {
     },
     {
       title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const tag = tableTags[status];
+      dataIndex: "importStatus",
+      key: "importStatus",
+      render: (importStatus) => {
+        const tag = tableTags[importStatus];
         return tag ? (
           <Tag color={tag.color}>{tag.label}</Tag>
         ) : (
@@ -96,8 +101,25 @@ const LogListPreview = () => {
       title: "Actions",
       dataIndex: "importId",
       key: "actions",
-      render: (importId) => (
-        <Button onClick={() => navigate(`/log/${importId}`)}>View Log</Button>
+      render: (importId, importStatus) => (
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          <Button onClick={() => navigate(`/log/${importId}`)}>View</Button>
+          <Popconfirm
+            title="Are you sure you want to delete this import?"
+            onConfirm={() => deleteImport(importId)}
+            okText="Delete"
+            okType="danger"
+            cancelText="Cancel"
+            okButtonProps={{ loading: deleteImportIsPending }}
+            placement="left"
+          >
+            <Button
+              danger
+              disabled={importStatus === "pending"}
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
+        </div>
       ),
     },
   ];

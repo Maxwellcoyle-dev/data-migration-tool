@@ -21,12 +21,7 @@ const NavBar = ({ signOut }) => {
 
   const navigate = useNavigate();
 
-  const {
-    currentPlatformInfo,
-    setCurrentPlatformInfo,
-    authenticated,
-    setAuthenticated,
-  } = useAppContext();
+  const { currentPlatformInfo, authenticated } = useAppContext();
 
   useEffect(() => {
     setPath(pathname);
@@ -90,7 +85,7 @@ const NavBar = ({ signOut }) => {
             placement="bottomLeft"
             onConfirm={onConfirmSignout}
           >
-            <Button danger icon={<LogoutOutlined />}></Button>
+            <Button icon={<LogoutOutlined />}></Button>
           </Popconfirm>
         </div>
       </Header>

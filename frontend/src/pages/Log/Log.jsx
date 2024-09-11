@@ -10,21 +10,24 @@ import {
   Spin,
   Alert,
   Empty,
+  Popconfirm,
 } from "antd";
 import {
   DownloadOutlined,
   SearchOutlined,
   ReloadOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 
+// Hooks
 import useGetImport from "../../hooks/useGetImport";
-import useListImportLogs from "../../hooks/useListImportLogs.js";
+import useDeleteImport from "../../hooks/useDeleteImport";
 
 import styles from "./Log.module.css";
 
 const { Panel } = Collapse;
 
-const Log = () => {
+const Log = ({ user }) => {
   const [filteredData, setFilteredData] = useState([]);
   const [tableFilters, setTableFilters] = useState({});
   const [tableSorter, setTableSorter] = useState({});
@@ -36,6 +39,10 @@ const Log = () => {
 
   const { importData, importIsLoading, importIsError, refetchImport } =
     useGetImport(id);
+
+  const { deleteImportAsync, deleteImportIsPending } = useDeleteImport(
+    user?.userId
+  );
 
   useEffect(() => {
     if (importData) {
@@ -302,9 +309,24 @@ const Log = () => {
           >
             Reset Filters & Sorting
           </Button>
+          <Popconfirm
+            title="Are you sure you want to delete this import?"
+            onConfirm={() => deleteImportAsync(id)}
+            okText="Delete"
+            okType="danger"
+            cancelText="Cancel"
+            okButtonProps={{ loading: deleteImportIsPending }}
+            placement="bottomLeft"
+          >
+            <Button
+              danger
+              disabled={importData?.importItem?.importStatus?.S === "pending"}
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
         </div>
       </div>
-      <Collapse defaultActiveKey={[1]}>
+      <Collapse defaultActiveKey={[]}>
         <Panel header="Import Metadata" key="1">
           {importIsLoading && (
             <div className={styles.logTableContainer}>
@@ -355,6 +377,19 @@ const Log = () => {
         </Panel>
       </Collapse>
 
+      {importIsLoading && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            marginTop: "5rem",
+          }}
+        >
+          <Spin tip="Loading..." size="large" />
+        </div>
+      )}
       {importData && (
         <Table
           columns={columns}

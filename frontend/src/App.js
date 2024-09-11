@@ -68,7 +68,10 @@ const App = ({ user, signOut }) => {
               <Home currentPlatformInfo={currentPlatformInfo} user={user} />
             }
           />
-          <Route path="/logs" element={<LogsPage logsList={logsList} />} />
+          <Route
+            path="/logs"
+            element={<LogsPage logsList={logsList} user={user} />}
+          />
           <Route path="/log/:id" element={<Log />} />
           <Route
             path="/authentication"
