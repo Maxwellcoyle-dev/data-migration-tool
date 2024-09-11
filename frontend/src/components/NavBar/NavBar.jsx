@@ -90,7 +90,7 @@ const NavBar = ({ signOut }) => {
             placement="bottomLeft"
             onConfirm={onConfirmSignout}
           >
-            <Button danger icon={<LogoutOutlined />}></Button>
+            <Button icon={<LogoutOutlined />}></Button>
           </Popconfirm>
         </div>
       </Header>

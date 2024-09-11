@@ -189,7 +189,7 @@ const Home = ({ currentPlatformInfo, user }) => {
           handleOptionChange={handleOptionChange}
         />
       )}
-      <LogListPreview />
+      <LogListPreview user={user} />
     </div>
   );
 };
