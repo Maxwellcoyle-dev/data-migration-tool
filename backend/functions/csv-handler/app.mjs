@@ -24,7 +24,6 @@ export const handler = async (event) => {
     const { fileData, importOptions, userId, domain, importType, fileName } =
       await processMultipartForm(event);
 
-    console.log("fileData", fileData);
     console.log("importOptions", importOptions);
     console.log("userId", userId);
     console.log("domain", domain);
@@ -106,10 +105,12 @@ export const handler = async (event) => {
     const chunks = [];
     const chunkCount = Math.ceil(transformedData?.length / maxChunkSize);
     console.log("chunkCount", chunkCount);
+    console.log("transformedData length -- ", transformedData.length);
+    console.log("maxChunkSize -- ", maxChunkSize);
     for (let i = 0; i < transformedData.length; i += maxChunkSize) {
       chunks.push(transformedData.slice(i, i + maxChunkSize));
     }
-    console.log("chunks", chunks);
+    console.log("chunks length -- ", chunks.length);
 
     try {
       // Send each chunk into SQS queue

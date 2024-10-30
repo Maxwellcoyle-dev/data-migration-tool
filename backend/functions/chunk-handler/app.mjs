@@ -12,6 +12,8 @@ const sqs = new SQSClient({ region: "us-east-2" });
 
 export const handler = async (event) => {
   console.log("Event received:", event);
+  // log the number of records in the event
+  console.log("Number of records:", event.Records.length);
 
   for (const record of event.Records) {
     let importId;
